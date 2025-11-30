@@ -11,32 +11,14 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.Configure<MongoDbSettings>(
-//    builder.Configuration.GetSection("MongoDb"));
-
-//builder.Services.AddSingleton<IMongoClient>(sp =>
-//{
-//    var settings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
-//    return new MongoClient(settings.ConnectionString);
-//});
-
-//builder.Services.AddScoped<IMongoDatabase>(sp =>
-//{
-//    var settings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
-//    var client = sp.GetRequiredService<IMongoClient>();
-//    return client.GetDatabase(settings.Database);
-//});
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDb"));
 
-// register MongoDbSettings as a singleton instance (so constructors depending on it can be activated)
 builder.Services.AddSingleton<MongoDbSettings>(sp =>
 {
-    // pass IConfiguration to the MongoDbSettings ctor
     var config = sp.GetRequiredService<IConfiguration>();
     return new MongoDbSettings(config);
 });
 
-// Configure JWT
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
 

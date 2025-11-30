@@ -2,8 +2,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RENTORA.API.Models;
 using RENTORA.API.Models.DTOs;
+using RENTORA.API.Models.Enums;
 using RENTORA.API.Models.MongoDB;
 using RENTORA.API.Repository.IRepository;
+using RENTORA.API.WebSettings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -60,7 +62,7 @@ namespace RENTORA.API.Services
                 }
 
                 // Create password hash and salt
-                CreatePasswordHash(registrationDto.Password, out string passwordHash, out string passwordSalt);
+                PasswordHelper.CreatePasswordHash(registrationDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 // Create new user
                 var newUser = new Registration
@@ -70,9 +72,9 @@ namespace RENTORA.API.Services
                     Mobile = registrationDto.Mobile,
                     Gender = registrationDto.Gender,
                     DateOfBirth = registrationDto.DateOfBirth,
-                    PasswordHash = passwordHash,
-                    PasswordSalt = passwordSalt,
-                    Role = registrationDto.Role ?? "tenant",
+                    PasswordHash = Convert.ToBase64String(passwordHash),
+                    PasswordSalt = Convert.ToBase64String(passwordSalt),
+                    Role = registrationDto.Role,
                     TenantId = registrationDto.TenantId,
                     OwnerId = registrationDto.OwnerId,
                     IsEmailVerified = false,
@@ -132,7 +134,8 @@ namespace RENTORA.API.Services
                 }
 
                 // Verify password
-                if (!VerifyPasswordHash(loginDto.Password, user.PasswordHash, user.PasswordSalt))
+                if (!PasswordHelper.VerifyPasswordHash(loginDto.Password,
+                    Convert.FromBase64String(user.PasswordHash),Convert.FromBase64String(user.PasswordSalt)))
                 {
                     return new LoginResponse
                     {
@@ -246,7 +249,6 @@ namespace RENTORA.API.Services
                 return false;
             }
         }
-
         public string GenerateJwtToken(Registration user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -258,7 +260,9 @@ namespace RENTORA.API.Services
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim(ClaimTypes.MobilePhone, user.Mobile ?? string.Empty),
-                new Claim(ClaimTypes.Role, user.Role)
+                //new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), user.Role)!)
+
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -275,30 +279,6 @@ namespace RENTORA.API.Services
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
-
-        private void CreatePasswordHash(string password, out string passwordHash, out string passwordSalt)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                var salt = hmac.Key;
-                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                passwordSalt = Convert.ToBase64String(salt);
-                passwordHash = Convert.ToBase64String(hash);
-            }
-        }
-
-        private bool VerifyPasswordHash(string password, string storedHash, string storedSalt)
-        {
-            var saltBytes = Convert.FromBase64String(storedSalt);
-            var hashBytes = Convert.FromBase64String(storedHash);
-
-            using (var hmac = new HMACSHA512(saltBytes))
-            {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(hashBytes);
-            }
         }
     }
 }

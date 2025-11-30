@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using RENTORA.API.Models.Enums;
 
 namespace RENTORA.API.Models
 {
@@ -22,7 +23,7 @@ namespace RENTORA.API.Models
         public Address Address { get; set; }
 
         // Multi-Role Support: superadmin, owner, manager, tenant
-        public string Role { get; set; }
+        public Role Role { get; set; }
         public string? TenantId { get; set; } = string.Empty;
         public string? OwnerId { get; set; } = string.Empty;
     }

@@ -6,6 +6,6 @@
         Admin = 2,
         Landlords = 3,
         Tenants = 4,
-        Agents
+        Agents = 5
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace RENTORA.API.Models
+﻿using RENTORA.API.Models.Enums;
+
+namespace RENTORA.API.Models
 {
     public class LoginResponse
     {
@@ -14,7 +16,7 @@
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Mobile { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+        public Role Role { get; set; }
         public bool IsEmailVerified { get; set; }
         public bool IsMobileVerified { get; set; }
     }
