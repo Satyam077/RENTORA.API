@@ -7,6 +7,7 @@ using RENTORA.API.Repository.IRepository;
 using RENTORA.API.WebSettings;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 
 namespace RENTORA.API.Controllers
 {
@@ -233,7 +234,7 @@ namespace RENTORA.API.Controllers
             }
         }
 
-        [HttpGet("all")]
+        [HttpGet("allUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             try
@@ -247,6 +248,14 @@ namespace RENTORA.API.Controllers
                     email = u.Email,
                     mobile = u.Mobile,
                     role = u.Role,
+                    gender = u.Gender,
+                    dateOfBirth = u.DateOfBirth,
+                    isEmailVerified = u.IsEmailVerified,
+                    isMobileVerified = u.IsMobileVerified,
+                    profileImageUrl = u.ProfileImageUrl,
+                    address = u.Address,
+                    tenantId = u.TenantId,
+                    ownerId = u.OwnerId,
                     isActive = u.IsActive,
                     createdAt = u.CreatedAt
                 }).ToList();
@@ -285,7 +294,88 @@ namespace RENTORA.API.Controllers
             {
                 return StatusCode(500, new { success = false, message = $"Failed to delete user: {ex.Message}" });
             }
-        }     
+        }
+
+        [HttpPost("upload-profile-picture/{userId}")]
+        public async Task<IActionResult> UploadProfilePicture(string userId, IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { success = false, message = "No file uploaded" });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return BadRequest(new { success = false, message = "Invalid file type. Only images are allowed." });
+                }
+
+                // Validate file size (max 5MB)
+                if (file.Length > 5 * 1024 * 1024)
+                {
+                    return BadRequest(new { success = false, message = "File size exceeds 5MB limit" });
+                }
+
+                // Get user
+                var user = await _userRepository.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { success = false, message = "User not found" });
+                }
+
+                // Create uploads directory if it doesn't exist
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Generate unique filename
+                var fileName = $"{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}{fileExtension}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                // Delete old profile picture if exists
+                if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                {
+                    var oldFilePath = user.ProfileImageUrl.Replace("/uploads/", "").Replace("/", "\\");
+                    var fullOldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", oldFilePath);
+                    if (System.IO.File.Exists(fullOldPath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(fullOldPath);
+                        }
+                        catch { /* Ignore deletion errors */ }
+                    }
+                }
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Update user profile image URL
+                var imageUrl = $"/uploads/profiles/{fileName}";
+                user.ProfileImageUrl = imageUrl;
+                await _userRepository.UpdateUserAsync(user);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Profile picture uploaded successfully",
+                    imageUrl = imageUrl
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Failed to upload profile picture: {ex.Message}" });
+            }
+        }
     }
 }
 

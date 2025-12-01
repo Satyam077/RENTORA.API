@@ -10,6 +10,7 @@ using RENTORA.API.Services;
 using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
 using System.Text;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -137,6 +138,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Configure static files for uploaded images
+var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(wwwrootPath))
+{
+    Directory.CreateDirectory(wwwrootPath);
+}
+app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 

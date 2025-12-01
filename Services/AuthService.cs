@@ -105,6 +105,7 @@ namespace RENTORA.API.Services
                         Email = createdUser.Email,
                         Mobile = createdUser.Mobile,
                         Role = createdUser.Role,
+                        ProfileImageUrl = createdUser.ProfileImageUrl,
                         IsEmailVerified = createdUser.IsEmailVerified,
                         IsMobileVerified = createdUser.IsMobileVerified
                     }
@@ -172,6 +173,7 @@ namespace RENTORA.API.Services
                         Email = user.Email,
                         Mobile = user.Mobile,
                         Role = user.Role,
+                        ProfileImageUrl = user.ProfileImageUrl,
                         IsEmailVerified = user.IsEmailVerified,
                         IsMobileVerified = user.IsMobileVerified
                     }
@@ -263,7 +265,7 @@ namespace RENTORA.API.Services
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim(ClaimTypes.MobilePhone, user.Mobile ?? string.Empty),
-                //new Claim(ClaimTypes.Role, user.Role)
+                new Claim("ProfileImageUrl", user.ProfileImageUrl ?? string.Empty),
                 new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), user.Role)!)
 
             };
