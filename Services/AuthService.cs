@@ -5,6 +5,7 @@ using RENTORA.API.Models.DTOs;
 using RENTORA.API.Models.Enums;
 using RENTORA.API.Models.MongoDB;
 using RENTORA.API.Repository.IRepository;
+using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,11 +18,13 @@ namespace RENTORA.API.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly JwtSettings _jwtSettings;
+        private readonly IEmailService _emailService;
 
-        public AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtSettings)
+        public AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtSettings, IEmailService emailService)
         {
             _userRepository = userRepository;
             _jwtSettings = jwtSettings.Value;
+            _emailService = emailService;
         }
 
         public async Task<LoginResponse> RegisterAsync(RegistrationDTO registrationDto)

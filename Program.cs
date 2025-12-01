@@ -7,6 +7,8 @@ using RENTORA.API.Models.MongoDB;
 using RENTORA.API.Repository;
 using RENTORA.API.Repository.IRepository;
 using RENTORA.API.Services;
+using RENTORA.API.Services.IServices;
+using RENTORA.API.WebSettings;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +20,7 @@ builder.Services.AddSingleton<MongoDbSettings>(sp =>
     var config = sp.GetRequiredService<IConfiguration>();
     return new MongoDbSettings(config);
 });
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
@@ -65,6 +68,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 // Add CORS with credentials support for cookie authentication
 builder.Services.AddCors(options =>

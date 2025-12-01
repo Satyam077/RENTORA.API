@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RENTORA.API.Models.DTOs;
-using RENTORA.API.Services;
+using RENTORA.API.Services.IServices;
 
 namespace RENTORA.API.Controllers
 {
