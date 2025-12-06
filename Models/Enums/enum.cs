@@ -51,4 +51,16 @@ namespace RENTORA.API.Models.Enums
         [Display(Name = "Helpdesk Query")]
         HelpdeskQuery,
     }
+    public enum PropertyType
+    {
+        Apartment = 1,
+        IndependentHouse = 2,
+        PG = 3,
+        CommercialShop = 4,
+        OfficeSpace =5,
+        Warehouse = 6,
+        Land = 7,
+        Other = 8
+    }
+
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RENTORA.API.Models;
 using RENTORA.API.Models.DTOs;
 using RENTORA.API.Repository.IRepository;
+using RENTORA.API.WebSettings;
 
 namespace RENTORA.API.Controllers
 {
@@ -113,7 +114,12 @@ namespace RENTORA.API.Controllers
                 return CreatedAtAction(
                     nameof(GetTemplateById),
                     new { id = createdTemplate.Id },
-                    response);
+                    new
+                    {
+                        success = true,
+                        message = CommonMessage.MessageSuccess.IsEmailSaved,
+                        data = response
+                    });
             }
             catch (Exception ex)
             {
@@ -128,6 +134,7 @@ namespace RENTORA.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<EmailTemplateResponseDTO>> UpdateTemplate(string id, [FromBody] EmailTemplateUpdateDTO updateDTO)
         {
+            ResponseModel response = new ResponseModel();
             try
             {
                 if (!ModelState.IsValid)
@@ -164,7 +171,13 @@ namespace RENTORA.API.Controllers
                     return NotFound($"Email template with ID '{id}' not found");
                 }
 
-                return Ok(MapToResponseDTO(updatedTemplate));
+               // return Ok(MapToResponseDTO(updatedTemplate));
+                return Ok(new
+                {
+                    success = true,
+                    message = CommonMessage.MessageSuccess.IsEmailSaved,
+                    data = MapToResponseDTO(updatedTemplate)
+                });
             }
             catch (Exception ex)
             {

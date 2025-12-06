@@ -72,6 +72,8 @@ namespace RENTORA.API.WebSettings
             public const string InActive = "Your Registration has been successful.";
             public const string OtpSent = "OTP sent successfully";
             public const string OtpVerified = "OTP verified successfully";
+            public const string IsEmailSaved = "Email template updated successfully.";
+            public const string IsPropertySaved = "Property saved successfully.";
         }
 
         public static class MessageError

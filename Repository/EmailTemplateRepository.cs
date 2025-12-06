@@ -66,6 +66,7 @@ namespace RENTORA.API.Repository
             existing.ApplicableFor = emailTemplate.ApplicableFor;
             existing.IsActive = emailTemplate.IsActive;
             existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = emailTemplate.UpdatedBy;
 
             var result = await _ctx.EmailTemplates.ReplaceOneAsync(
                 e => e.Id == emailTemplate.Id,
