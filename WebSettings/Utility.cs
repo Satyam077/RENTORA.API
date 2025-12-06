@@ -2,6 +2,7 @@
 using RENTORA.API.Models;
 using RENTORA.API.Models.Enums;
 using RENTORA.API.Models.MongoDB;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -47,6 +48,43 @@ namespace RENTORA.API.WebSettings
                 Role.Agents => "Agents",
                 _ => "Unknown"
             };
+        }
+    }
+    public static class Helper
+    {
+        public static string GetDisplayName(Enum value)
+        {
+            return value.GetType()
+                        .GetField(value.ToString())
+                        ?.GetCustomAttributes(typeof(DisplayAttribute), false)
+                        is DisplayAttribute[] da && da.Length > 0
+                            ? da[0].Name
+                            : value.ToString();
+        }
+    }
+    public static class CommonMessage
+    {
+        public static class MessageSuccess
+        {
+            public const string Saved = "Record has been saved successfully.";
+            public const string Success = "Your Registration has been successful.";
+            public const string LoginSuccess = "Your Login has been successful.";
+            public const string InActive = "Your Registration has been successful.";
+            public const string OtpSent = "OTP sent successfully";
+            public const string OtpVerified = "OTP verified successfully";
+        }
+
+        public static class MessageError
+        {
+            public const string Failed = "Record has not been saved successfully.";
+            public const string Invalid = "Invalid credentials.";
+            public const string Required = "Email or Mobile is required.";
+            public const string IsDuplicate = "User with this email or mobile already exists.";
+
+            public const string PasswordNotMatch = "Passwords do not match.";
+            public const string InActive = "Account is inactive. Please contact support.";
+            public const string FailedOtp = "Failed to send OTP";
+            public const string OtpExpired = "Invalid or expired OTP";
         }
     }
 }

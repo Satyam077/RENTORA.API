@@ -1,4 +1,6 @@
-﻿namespace RENTORA.API.Models.Enums
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RENTORA.API.Models.Enums
 {
     public enum Role
     {
@@ -9,5 +11,44 @@
         Agents = 5,
         Manager = 6
 
+    }
+    public enum ApplicableFor
+    {
+        [Display(Name = "Super Admin")]
+        SuperAdmin = 1,
+        [Display(Name = "Admin")]
+        Admin = 2,
+        [Display(Name = "Landlords")]
+        Landlords = 3,
+        [Display(Name = "Tenants")]
+        Tenants = 4,
+        [Display(Name = "Agents")]
+        Agents = 5,
+        [Display(Name = "Manager")]
+        Manager = 6
+    }
+
+    public enum EmailTemplateName
+    {
+        [Display(Name = "Super Admin Registration")]
+        SuperAdminRegistration,
+
+        [Display(Name = "Admin Registration")]
+        AdminRegistration,
+
+        [Display(Name = "Landlords Registration")]
+        LandlordsRegistration,
+
+        [Display(Name = "Agents Registration")]
+        AgentRegistration,
+
+        [Display(Name = "Tenants Registration")]
+        TenantsRegistration,
+
+        [Display(Name = "User Login Otp")]
+        UserLoginOtp,
+
+        [Display(Name = "Helpdesk Query")]
+        HelpdeskQuery,
     }
 }

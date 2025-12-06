@@ -21,7 +21,7 @@ builder.Services.AddSingleton<MongoDbSettings>(sp =>
     var config = sp.GetRequiredService<IConfiguration>();
     return new MongoDbSettings(config);
 });
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Sendgrid"));
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
@@ -70,6 +70,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
+
 
 
 // Add CORS with credentials support for cookie authentication

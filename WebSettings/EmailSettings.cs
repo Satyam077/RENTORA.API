@@ -3,7 +3,8 @@
     public class EmailSettings
     {
         public string FromName { get; set; }
-        public string FromEmail { get; set; }
+        public string From { get; set; }
+        public string ApiKey { get; set; }
         public string SmtpHost { get; set; }
         public int SmtpPort { get; set; }
         public string SmtpUser { get; set; }

@@ -27,6 +27,7 @@ namespace RENTORA.API.Models.MongoDB
             }
         }
         public IMongoCollection<Registration> Users => _database.GetCollection<Registration>("Registration");
+        public IMongoCollection<EmailTemplate> EmailTemplates => _database.GetCollection<EmailTemplate>("EmailTemplates");
     }
 
 }

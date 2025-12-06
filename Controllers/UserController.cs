@@ -4,10 +4,11 @@ using RENTORA.API.Models;
 using RENTORA.API.Models.DTOs;
 using RENTORA.API.Models.Enums;
 using RENTORA.API.Repository.IRepository;
+using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.IO;
 
 namespace RENTORA.API.Controllers
 {
@@ -17,10 +18,12 @@ namespace RENTORA.API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserRepository userRepository ,IEmailService emailService)
         {
             _userRepository = userRepository;
+            _emailService = emailService;
         }
 
         [HttpPost("create")]
@@ -40,7 +43,9 @@ namespace RENTORA.API.Controllers
 
                 if (existingUser != null)
                 {
-                    return BadRequest(new { success = false, message = "User with this email or mobile already exists" });
+                    return BadRequest(new { 
+                      success = false, 
+                      message = CommonMessage.MessageError.IsDuplicate });
                 }
 
                 // Create password hash and salt
@@ -74,6 +79,7 @@ namespace RENTORA.API.Controllers
                     PasswordHash = Convert.ToBase64String(passwordHash),
                     PasswordSalt = Convert.ToBase64String(passwordSalt),
                     ProfileImageUrl = userDto.ProfileImageUrl,
+                    ApplicationUrl = userDto.ApplicationUrl ?? "https://rentora.in",
                     Address = address,
                     Role = userDto.Role,
                     TenantId = userDto.TenantId,
@@ -87,6 +93,37 @@ namespace RENTORA.API.Controllers
                 };
 
                 var createdUser = await _userRepository.CreateUserAsync(newUser);
+
+                var tokens = new Dictionary<string, string>
+                    {
+                       { "FullName", newUser.FullName },
+                       { "ApplicationUrl", "www.rentora.com" },
+                       { "Email", newUser.Email },
+                       { "Password", userDto.Password },
+                       { "SupportStaff", "RENTORA PMS" },
+                       { "SupportContact", "+91 1234567899" },
+                       { "PropertyName", "Super Tech Noida" },
+                       { "SupportEmail", "uniquextech7@gmail.com"},
+                       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
+                    };
+
+
+                EmailTemplateName templateName = newUser.Role switch
+                {
+                    Role.SuperAdmin => EmailTemplateName.SuperAdminRegistration,
+                    Role.Admin => EmailTemplateName.AdminRegistration,
+                    Role.Landlords => EmailTemplateName.LandlordsRegistration,
+                    Role.Agents => EmailTemplateName.AgentRegistration,
+                    Role.Tenants => EmailTemplateName.TenantsRegistration,
+                    _ => EmailTemplateName.HelpdeskQuery
+                };
+
+                await _emailService.SendTemplateEmailAsync(
+                    newUser.Email,
+                    newUser.FullName,
+                    templateName,
+                    tokens
+                );
 
                 // Return user without sensitive data
                 return Ok(new
@@ -173,6 +210,37 @@ namespace RENTORA.API.Controllers
                 existingUser.IsActive = userDto.IsActive ?? existingUser.IsActive;
 
                 var result = await _userRepository.UpdateUserAsync(existingUser);
+
+                var tokens = new Dictionary<string, string>
+                    {
+                       { "FullName", existingUser.FullName },
+                       { "ApplicationUrl", "www.rentora.com" },
+                       { "Email", existingUser.Email },
+                       //{ "Password", userDto.Password },
+                       { "SupportStaff", "RENTORA PMS" },
+                       { "SupportContact", "+91 1234567899" },
+                       { "PropertyName", "Super Tech Noida" },
+                       { "SupportEmail", "uniquextech7@gmail.com"},
+                       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
+                    };
+
+
+                EmailTemplateName templateName = existingUser.Role switch
+                {
+                    Role.SuperAdmin => EmailTemplateName.SuperAdminRegistration,
+                    Role.Admin => EmailTemplateName.AdminRegistration,
+                    Role.Landlords => EmailTemplateName.LandlordsRegistration,
+                    Role.Agents => EmailTemplateName.AgentRegistration,
+                    Role.Tenants => EmailTemplateName.TenantsRegistration,
+                    _ => EmailTemplateName.HelpdeskQuery
+                };
+
+                await _emailService.SendTemplateEmailAsync(
+                    existingUser.Email,
+                    existingUser.FullName,
+                    templateName,
+                    tokens
+                );
 
                 if (!result)
                 {

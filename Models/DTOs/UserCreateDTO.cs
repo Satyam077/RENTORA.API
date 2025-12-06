@@ -24,6 +24,7 @@ namespace RENTORA.API.Models.DTOs
         public string Password { get; set; }
 
         public string? ProfileImageUrl { get; set; }
+        public string? ApplicationUrl { get; set; }
 
         public AddressDTO? Address { get; set; }
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RENTORA.API.Models.DTOs;
 using RENTORA.API.Services.IServices;
+using RENTORA.API.WebSettings;
 
 namespace RENTORA.API.Controllers
 {
@@ -60,17 +61,17 @@ namespace RENTORA.API.Controllers
         {
             if (string.IsNullOrWhiteSpace(emailOrMobile))
             {
-                return BadRequest(new { success = false, message = "Email or mobile is required" });
+                return BadRequest(new { success = false, message = CommonMessage.MessageError.Required });
             }
 
             var result = await _authService.SendOtpAsync(emailOrMobile);
 
             if (!result)
             {
-                return BadRequest(new { success = false, message = "Failed to send OTP" });
+                return BadRequest(new { success = false, message = CommonMessage.MessageError.FailedOtp });
             }
 
-            return Ok(new { success = true, message = "OTP sent successfully" });
+            return Ok(new { success = true, message =CommonMessage.MessageSuccess.OtpSent });
         }
 
         [HttpPost("verify-otp")]
@@ -86,10 +87,10 @@ namespace RENTORA.API.Controllers
 
             if (!result)
             {
-                return BadRequest(new { success = false, message = "Invalid or expired OTP" });
+                return BadRequest(new { success = false, message = CommonMessage.MessageError.OtpExpired });
             }
 
-            return Ok(new { success = true, message = "OTP verified successfully" });
+            return Ok(new { success = true, message = CommonMessage.MessageSuccess.OtpVerified });
         }
     }
 }

@@ -20,6 +20,7 @@ namespace RENTORA.API.Models
         public DateTime? LastOtpGeneratedAt { get; set; }
         public bool IsOtpVerified { get; set; }
         public string ProfileImageUrl { get; set; }
+        public string ApplicationUrl { get; set; } =  string.Empty;
         public Address Address { get; set; }
 
         // Multi-Role Support: superadmin, owner, manager, tenant

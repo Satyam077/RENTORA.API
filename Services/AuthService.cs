@@ -37,7 +37,7 @@ namespace RENTORA.API.Services
                     return new LoginResponse
                     {
                         Success = false,
-                        Message = "Email or Mobile is required"
+                        Message = CommonMessage.MessageError.Required
                     };
                 }
 
@@ -46,7 +46,7 @@ namespace RENTORA.API.Services
                     return new LoginResponse
                     {
                         Success = false,
-                        Message = "Passwords do not match"
+                        Message = CommonMessage.MessageError.PasswordNotMatch
                     };
                 }
 
@@ -60,14 +60,11 @@ namespace RENTORA.API.Services
                     return new LoginResponse
                     {
                         Success = false,
-                        Message = "User with this email or mobile already exists"
+                        Message = CommonMessage.MessageError.IsDuplicate
                     };
                 }
-
-                // Create password hash and salt
                 PasswordHelper.CreatePasswordHash(registrationDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-                // Create new user
+                
                 var newUser = new Registration
                 {
                     FullName = registrationDto.FullName,
@@ -85,7 +82,8 @@ namespace RENTORA.API.Services
                     IsOtpVerified = false,
                     CreatedBy = "System",
                     IsActive = true,
-                    IsDeleted = false
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 var createdUser = await _userRepository.CreateUserAsync(newUser);
@@ -96,7 +94,7 @@ namespace RENTORA.API.Services
                 return new LoginResponse
                 {
                     Success = true,
-                    Message = "Registration successful",
+                    Message = CommonMessage.MessageSuccess.Success,
                     Token = token,
                     User = new UserInfo
                     {
@@ -133,7 +131,7 @@ namespace RENTORA.API.Services
                     return new LoginResponse
                     {
                         Success = false,
-                        Message = "Invalid credentials"
+                        Message = CommonMessage.MessageError.Invalid
                     };
                 }
 
@@ -144,7 +142,7 @@ namespace RENTORA.API.Services
                     return new LoginResponse
                     {
                         Success = false,
-                        Message = "Invalid credentials"
+                        Message = CommonMessage.MessageError.Invalid
                     };
                 }
 
@@ -154,7 +152,7 @@ namespace RENTORA.API.Services
                     return new LoginResponse
                     {
                         Success = false,
-                        Message = "Account is inactive. Please contact support."
+                        Message = CommonMessage.MessageError.InActive
                     };
                 }
 
@@ -164,7 +162,7 @@ namespace RENTORA.API.Services
                 return new LoginResponse
                 {
                     Success = true,
-                    Message = "Login successful",
+                    Message = CommonMessage.MessageSuccess.LoginSuccess,
                     Token = token,
                     User = new UserInfo
                     {
@@ -267,7 +265,6 @@ namespace RENTORA.API.Services
                 new Claim(ClaimTypes.MobilePhone, user.Mobile ?? string.Empty),
                 new Claim("ProfileImageUrl", user.ProfileImageUrl ?? string.Empty),
                 new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), user.Role)!)
-
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

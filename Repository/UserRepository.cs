@@ -7,7 +7,6 @@ namespace RENTORA.API.Repository
 {
     public class UserRepository : IUserRepository
     {
-        //private readonly IMongoCollection<Registration> _users;
         private readonly MongoDbSettings _ctx;
 
         public UserRepository(MongoDbSettings ctx)
@@ -40,7 +39,6 @@ namespace RENTORA.API.Repository
         public async Task<Registration> CreateUserAsync(Registration user)
         {
             user.CreatedAt = DateTime.UtcNow;
-            user.UpdatedAt = DateTime.UtcNow;
             user.IsActive = true;
             user.IsDeleted = false;
             
