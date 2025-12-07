@@ -1,9 +1,9 @@
-﻿
-namespace RENTORA.API.Models
+﻿namespace RENTORA.API.Models
 {
-    public class UnitModel
+    public class UnitModel : BaseEntity
     {
-        public string PropertyId { get; set; } = string.Empty;
+        public string OwnerId { get; set; }
+        public string PropertyId { get; set; }
         public string TenantId { get; set; } = string.Empty;
         public string UnitName { get; set; }             // e.g., "Flat 101"
         public decimal RentAmount { get; set; }

@@ -1,5 +1,6 @@
 using MongoDB.Driver;
 using RENTARA.API.Models;
+using RENTORA.API.Models;
 
 namespace RENTORA.API.Models.MongoDB
 {
@@ -30,6 +31,7 @@ namespace RENTORA.API.Models.MongoDB
         public IMongoCollection<Registration> Users => _database.GetCollection<Registration>("Registration");
         public IMongoCollection<EmailTemplate> EmailTemplates => _database.GetCollection<EmailTemplate>("EmailTemplates");
         public IMongoCollection<PropertyModel> Properties => _database.GetCollection<PropertyModel>("Properties");
+        public IMongoCollection<UnitModel> Units => _database.GetCollection<UnitModel>("Units");
     }
 
 }

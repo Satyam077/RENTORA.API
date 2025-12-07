@@ -72,6 +72,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+builder.Services.AddScoped<IUnitsRepository, UnitsRepository>();
 
 
 
