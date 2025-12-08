@@ -57,10 +57,20 @@ namespace RENTORA.API.Models.Enums
         IndependentHouse = 2,
         PG = 3,
         CommercialShop = 4,
-        OfficeSpace =5,
+        OfficeSpace = 5,
         Warehouse = 6,
         Land = 7,
         Other = 8
-    }
 
+    }
+    public enum IdProofType
+    {
+        Aadhaar = 1,
+        PAN = 2,
+        Passport = 3,
+        DrivingLicense = 4 ,
+        VoterId = 5,
+        Other = 6
+    }
 }
+

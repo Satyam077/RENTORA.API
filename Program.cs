@@ -73,6 +73,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IUnitsRepository, UnitsRepository>();
+builder.Services.AddScoped<ITenantsRepository, TenantsRepository>();
 
 
 
@@ -159,4 +160,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
