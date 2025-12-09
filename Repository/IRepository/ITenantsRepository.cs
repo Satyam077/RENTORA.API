@@ -1,9 +1,11 @@
 ﻿using RENTARA.API.Models;
+using RENTORA.API.Models.DTOs;
 
 namespace RENTORA.API.Repository.IRepository
 {
     public interface ITenantsRepository
     {
+        // Original methods (still needed for internal operations)
         Task<IEnumerable<Tenant>> GetAllAsync();
         Task<Tenant?> GetByIdAsync(string id);
         Task<IEnumerable<Tenant>> GetByOwnerIdAsync(string ownerId);
@@ -12,7 +14,12 @@ namespace RENTORA.API.Repository.IRepository
         Task<Tenant> CreateAsync(Tenant tenant);
         Task<Tenant?> UpdateAsync(Tenant tenant);
         Task<bool> DeleteAsync(string id);
-        Task<bool> ExistsByEmailAsync(string email);
-        Task<bool> ExistsByMobileAsync(string mobile);
+
+        // New methods with joined User data (no redundancy)
+        Task<IEnumerable<TenantResponseDTO>> GetAllTenantsWithUserDataAsync();
+        Task<TenantResponseDTO?> GetTenantWithUserDataByIdAsync(string id);
+        Task<IEnumerable<TenantResponseDTO>> GetTenantsByOwnerIdWithUserDataAsync(string ownerId);
+        Task<IEnumerable<TenantResponseDTO>> GetTenantsByPropertyIdWithUserDataAsync(string propertyId);
+        Task<IEnumerable<TenantResponseDTO>> GetTenantsByUnitIdWithUserDataAsync(string unitId);
     }
 }

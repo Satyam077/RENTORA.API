@@ -1,5 +1,7 @@
 ﻿using MongoDB.Driver;
 using RENTARA.API.Models;
+using RENTORA.API.Models;
+using RENTORA.API.Models.DTOs;
 using RENTORA.API.Models.MongoDB;
 using RENTORA.API.Repository.IRepository;
 
@@ -70,20 +72,111 @@ namespace RENTORA.API.Repository
             return result.DeletedCount > 0;
         }
 
-        public async Task<bool> ExistsByEmailAsync(string email)
+        // New methods with joined User data
+        public async Task<IEnumerable<TenantResponseDTO>> GetAllTenantsWithUserDataAsync()
         {
-            var count = await _ctx.Tenants.CountDocumentsAsync(
-                t => t.Email.ToLower() == email.ToLower()
-            );
-            return count > 0;
+            var tenants = await _ctx.Tenants.Find(_ => true).ToListAsync();
+            return await JoinTenantWithUserData(tenants);
         }
 
-        public async Task<bool> ExistsByMobileAsync(string mobile)
+        public async Task<TenantResponseDTO?> GetTenantWithUserDataByIdAsync(string id)
         {
-            var count = await _ctx.Tenants.CountDocumentsAsync(
-                t => t.Mobile == mobile
-            );
-            return count > 0;
+            var tenant = await _ctx.Tenants.Find(t => t.Id == id).FirstOrDefaultAsync();
+            if (tenant == null) return null;
+
+            var tenants = new List<Tenant> { tenant };
+            var result = await JoinTenantWithUserData(tenants);
+            return result.FirstOrDefault();
+        }
+
+        public async Task<IEnumerable<TenantResponseDTO>> GetTenantsByOwnerIdWithUserDataAsync(string ownerId)
+        {
+            var tenants = await _ctx.Tenants.Find(t => t.OwnerId == ownerId).ToListAsync();
+            return await JoinTenantWithUserData(tenants);
+        }
+
+        public async Task<IEnumerable<TenantResponseDTO>> GetTenantsByPropertyIdWithUserDataAsync(string propertyId)
+        {
+            var tenants = await _ctx.Tenants.Find(t => t.PropertyId == propertyId).ToListAsync();
+            return await JoinTenantWithUserData(tenants);
+        }
+
+        public async Task<IEnumerable<TenantResponseDTO>> GetTenantsByUnitIdWithUserDataAsync(string unitId)
+        {
+            var tenants = await _ctx.Tenants.Find(t => t.UnitId == unitId).ToListAsync();
+            return await JoinTenantWithUserData(tenants);
+        }
+
+        /// <summary>
+        /// Helper method to join Tenant data with User (Registration) data
+        /// Eliminates redundancy by fetching user details from Users collection
+        /// </summary>
+        private async Task<List<TenantResponseDTO>> JoinTenantWithUserData(List<Tenant> tenants)
+        {
+            var result = new List<TenantResponseDTO>();
+
+            foreach (var tenant in tenants)
+            {
+                // Fetch user data from Users collection
+                var user = await _ctx.Users.Find(u => u.Id == tenant.UserId).FirstOrDefaultAsync();
+
+                if (user != null)
+                {
+                    result.Add(new TenantResponseDTO
+                    {
+                        // Tenant ID
+                        Id = tenant.Id,
+
+                        // User Information (from Registration/Users collection)
+                        UserId = user.Id,
+                        FullName = user.FullName,
+                        Email = user.Email,
+                        Mobile = user.Mobile,
+                        Gender = user.Gender ?? string.Empty,
+                        DateOfBirth = user.DateOfBirth,
+                        IsEmailVerified = user.IsEmailVerified,
+                        IsMobileVerified = user.IsMobileVerified,
+                        ProfileImageUrl = user.ProfileImageUrl ?? string.Empty,
+
+                        // Tenant-specific Information (from Tenants collection)
+                        OwnerId = tenant.OwnerId,
+                        PropertyId = tenant.PropertyId,
+                        UnitId = tenant.UnitId,
+                        PermanentAddress = tenant.PermanentAddress,
+                        CurrentAddress = tenant.CurrentAddress,
+
+                        // Rent & Agreement Info
+                        RentAmount = tenant.RentAmount,
+                        SecurityDeposit = tenant.SecurityDeposit,
+                        RentDueDay = tenant.RentDueDay,
+                        AgreementStartDate = tenant.AgreementStartDate,
+                        AgreementEndDate = tenant.AgreementEndDate,
+                        IsAgreementExpired = tenant.IsAgreementExpired,
+
+                        // KYC / ID Proof
+                        Documents = tenant.Documents,
+                        IdProofType = tenant.IdProofType ?? string.Empty,
+                        IdProofNumber = tenant.IdProofNumber ?? string.Empty,
+
+                        // Status Tracking
+                        IsActiveTenant = tenant.IsActiveTenant,
+                        IsRentPending = tenant.IsRentPending,
+                        IsMovedOut = tenant.IsMovedOut,
+                        MoveInDate = tenant.MoveInDate,
+                        MoveOutDate = tenant.MoveOutDate,
+                        Notes = tenant.Notes,
+
+                        // Base Entity Fields
+                        IsActive = tenant.IsActive,
+                        CreatedAt = tenant.CreatedAt,
+                        UpdatedAt = tenant.UpdatedAt,
+                        CreatedBy = tenant.CreatedBy,
+                        UpdatedBy = tenant.UpdatedBy
+                    });
+                }
+            }
+
+            return result;
         }
     }
 }

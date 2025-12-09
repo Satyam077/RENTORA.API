@@ -13,6 +13,7 @@ namespace RENTORA.API.Models.DTOs
         [Required]
         public string UnitId { get; set; }
 
+        // Personal Information (will be stored in Registration/Users collection)
         [Required]
         public string FirstName { get; set; }
 
@@ -27,14 +28,13 @@ namespace RENTORA.API.Models.DTOs
         [EmailAddress]
         public string Email { get; set; }
 
-        public string Password { get; set; } = string.Empty;
-
         public string Gender { get; set; } = string.Empty;
 
         public string FatherName { get; set; } = string.Empty;
 
         public DateTime? DateOfBirth { get; set; }
 
+        // Tenant-specific fields (stored in Tenant collection)
         public string PermanentAddress { get; set; } = string.Empty;
 
         public string CurrentAddress { get; set; } = string.Empty;
@@ -80,6 +80,7 @@ namespace RENTORA.API.Models.DTOs
         [Required]
         public string UnitId { get; set; }
 
+        // Personal Information (will update Registration/Users collection)
         [Required]
         public string FirstName { get; set; }
 
@@ -94,14 +95,13 @@ namespace RENTORA.API.Models.DTOs
         [EmailAddress]
         public string Email { get; set; }
 
-        public string Password { get; set; } = string.Empty;
-
         public string Gender { get; set; } = string.Empty;
 
         public string FatherName { get; set; } = string.Empty;
 
         public DateTime? DateOfBirth { get; set; }
 
+        // Tenant-specific fields (stored in Tenant collection)
         public string PermanentAddress { get; set; } = string.Empty;
 
         public string CurrentAddress { get; set; } = string.Empty;

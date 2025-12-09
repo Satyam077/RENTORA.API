@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using RENTARA.API.Models;
 using RENTORA.API.Models;
 using RENTORA.API.Models.DTOs;
+using RENTORA.API.Models.Enums;
+using RENTORA.API.Helpers;
 using RENTORA.API.Repository.IRepository;
+using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
 
 namespace RENTORA.API.Controllers
@@ -14,28 +17,62 @@ namespace RENTORA.API.Controllers
     public class TenantsController : ControllerBase
     {
         private readonly ITenantsRepository _tenantsRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
         private readonly ILogger<TenantsController> _logger;
 
         public TenantsController(
             ITenantsRepository tenantsRepository,
+            IUserRepository userRepository,
+            IEmailService emailService,
             ILogger<TenantsController> logger)
         {
             _tenantsRepository = tenantsRepository;
+            _userRepository = userRepository;
+            _emailService = emailService;
             _logger = logger;
         }
 
+        //[HttpGet]
+        //[ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
+        //public async Task<ActionResult<ResponseModel>> GetAllTenants()
+        //{
+        //    ResponseModel response = new ResponseModel();
+        //    try
+        //    {
+        //        var users = await _userRepository.GetAllUsersAsync();
+        //        var tenants = await _tenantsRepository.GetAllAsync();
+        //        response.Success = true;
+        //        response.Status = StatusCodes.Status200OK;
+        //        response.Message = "Tenants retrieved successfully";
+        //        response.data = tenants;
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error retrieving tenants");
+        //        response.Success = false;
+        //        response.Status = StatusCodes.Status500InternalServerError;
+        //        response.Message = "An error occurred while retrieving tenants";
+        //        return StatusCode(500, response);
+        //    }
+        //}
         [HttpGet]
         [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAllTenants()
         {
             ResponseModel response = new ResponseModel();
+
             try
             {
-                var tenants = await _tenantsRepository.GetAllAsync();
+                // Use repository method that joins Tenant and User data (no redundancy)
+                var tenants = await _tenantsRepository.GetAllTenantsWithUserDataAsync();
+
                 response.Success = true;
                 response.Status = StatusCodes.Status200OK;
                 response.Message = "Tenants retrieved successfully";
                 response.data = tenants;
+
                 return Ok(response);
             }
             catch (Exception ex)
@@ -48,6 +85,7 @@ namespace RENTORA.API.Controllers
             }
         }
 
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
@@ -56,7 +94,7 @@ namespace RENTORA.API.Controllers
             ResponseModel response = new ResponseModel();
             try
             {
-                var tenant = await _tenantsRepository.GetByIdAsync(id);
+                var tenant = await _tenantsRepository.GetTenantWithUserDataByIdAsync(id);
 
                 if (tenant == null)
                 {
@@ -89,7 +127,7 @@ namespace RENTORA.API.Controllers
             ResponseModel response = new ResponseModel();
             try
             {
-                var tenants = await _tenantsRepository.GetByOwnerIdAsync(ownerId);
+                var tenants = await _tenantsRepository.GetTenantsByOwnerIdWithUserDataAsync(ownerId);
                 response.Success = true;
                 response.Status = StatusCodes.Status200OK;
                 response.Message = "Tenants retrieved successfully";
@@ -113,7 +151,7 @@ namespace RENTORA.API.Controllers
             ResponseModel response = new ResponseModel();
             try
             {
-                var tenants = await _tenantsRepository.GetByPropertyIdAsync(propertyId);
+                var tenants = await _tenantsRepository.GetTenantsByPropertyIdWithUserDataAsync(propertyId);
                 response.Success = true;
                 response.Status = StatusCodes.Status200OK;
                 response.Message = "Tenants retrieved successfully";
@@ -137,7 +175,7 @@ namespace RENTORA.API.Controllers
             ResponseModel response = new ResponseModel();
             try
             {
-                var tenants = await _tenantsRepository.GetByUnitIdAsync(unitId);
+                var tenants = await _tenantsRepository.GetTenantsByUnitIdWithUserDataAsync(unitId);
                 response.Success = true;
                 response.Status = StatusCodes.Status200OK;
                 response.Message = "Tenants retrieved successfully";
@@ -169,40 +207,62 @@ namespace RENTORA.API.Controllers
                     return BadRequest(response);
                 }
 
-                // Check if email already exists
-                var emailExists = await _tenantsRepository.ExistsByEmailAsync(createDTO.Email);
-                if (emailExists)
+                // Check if email already exists in Users collection
+                var existingUser = await _userRepository.GetUserByEmailAsync(createDTO.Email);
+                if (existingUser != null)
                 {
                     response.Success = false;
                     response.Status = StatusCodes.Status400BadRequest;
-                    response.Message = $"Tenant with email '{createDTO.Email}' already exists";
+                    response.Message = $"User with email '{createDTO.Email}' already exists";
                     return BadRequest(response);
                 }
 
-                // Check if mobile already exists
-                var mobileExists = await _tenantsRepository.ExistsByMobileAsync(createDTO.Mobile);
-                if (mobileExists)
+                // Check if mobile already exists in Users collection
+                var existingMobile = await _userRepository.GetUserByMobileAsync(createDTO.Mobile);
+                if (existingMobile != null)
                 {
                     response.Success = false;
                     response.Status = StatusCodes.Status400BadRequest;
-                    response.Message = $"Tenant with mobile '{createDTO.Mobile}' already exists";
+                    response.Message = $"User with mobile '{createDTO.Mobile}' already exists";
                     return BadRequest(response);
                 }
 
-                // Map DTO to Tenant
+                // Step 1: Generate secure random password
+                string generatedPassword = PasswordGenerator.GenerateSecurePassword(12, true);
+
+                // Step 2: Create password hash
+                PasswordHelper.CreatePasswordHash(generatedPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+                // Step 3: Create User Account in Registration collection
+                var newUser = new Registration
+                {
+                    FullName = $"{createDTO.FirstName} {createDTO.LastName}",
+                    Email = createDTO.Email,
+                    Mobile = createDTO.Mobile,
+                    Gender = createDTO.Gender,
+                    DateOfBirth = createDTO.DateOfBirth,
+                    PasswordHash = Convert.ToBase64String(passwordHash),
+                    PasswordSalt = Convert.ToBase64String(passwordSalt),
+                    Role = Role.Tenants,
+                    OwnerId = createDTO.OwnerId,
+                    IsEmailVerified = false,
+                    IsMobileVerified = false,
+                    IsOtpVerified = false,
+                    CreatedBy = createDTO.CreatedBy,
+                    IsActive = true,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var createdUser = await _userRepository.CreateUserAsync(newUser);
+
+                // Step 4: Create Tenant record linked to User
                 var tenant = new Tenant
                 {
+                    UserId = createdUser.Id, // Link to User account
                     OwnerId = createDTO.OwnerId,
                     PropertyId = createDTO.PropertyId,
                     UnitId = createDTO.UnitId,
-                    FirstName = createDTO.FirstName,
-                    LastName = createDTO.LastName,
-                    Mobile = createDTO.Mobile,
-                    Email = createDTO.Email,
-                    Password = createDTO.Password,
-                    Gender = createDTO.Gender,
-                    FatherName = createDTO.FatherName,
-                    DateOfBirth = createDTO.DateOfBirth,
                     PermanentAddress = createDTO.PermanentAddress,
                     CurrentAddress = createDTO.CurrentAddress,
                     RentAmount = createDTO.RentAmount,
@@ -220,10 +280,56 @@ namespace RENTORA.API.Controllers
 
                 var createdTenant = await _tenantsRepository.CreateAsync(tenant);
 
+                // Step 5: Update User with TenantId
+                createdUser.TenantId = createdTenant.Id;
+                await _userRepository.UpdateUserAsync(createdUser);
+
+                // Step 6: Send Welcome Email with Credentials
+                try
+                {
+                    var emailTokens = new Dictionary<string, string>
+                    {
+                        { "FullName", $"{createDTO.FirstName} {createDTO.LastName}" },
+                        { "Email", createDTO.Email },
+                        { "Password", generatedPassword },
+                        { "PropertyName", createDTO.PropertyId },
+                        { "ApplicationUrl", "http://localhost:4200/login" }, // Update with your actual login URL
+                       { "SupportStaff", "RENTORA PMS" },
+                       { "SupportContact", "+91 1234567899" },
+                       { "SupportEmail", "uniquextech7@gmail.com"},
+                       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
+                    };
+
+                    await _emailService.SendTemplateEmailAsync(
+                        createDTO.Email,
+                        $"{createDTO.FirstName} {createDTO.LastName}",
+                        EmailTemplateName.TenantsRegistration,
+                        emailTokens
+                    );
+
+                    _logger.LogInformation($"Welcome email sent to tenant: {createDTO.Email}");
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, $"Failed to send welcome email to: {createDTO.Email}");
+                    // Don't fail the entire operation if email fails
+                }
+
                 response.Success = true;
                 response.Status = StatusCodes.Status201Created;
-                response.Message = "Tenant created successfully";
-                response.data = createdTenant;
+                response.Message = "Tenant created successfully. Login credentials sent to email.";
+                response.data = new
+                {
+                    Tenant = createdTenant,
+                    User = new
+                    {
+                        createdUser.Id,
+                        createdUser.Email,
+                        createdUser.Mobile,
+                        createdUser.FullName
+                    },
+                    TemporaryPassword = generatedPassword // Only for development/testing, remove in production
+                };
 
                 return CreatedAtAction(
                     nameof(GetTenantById),
@@ -275,21 +381,34 @@ namespace RENTORA.API.Controllers
                     return NotFound(response);
                 }
 
-                // Map DTO to Tenant
+                // Get the linked user account
+                var existingUser = await _userRepository.GetUserByIdAsync(existingTenant.UserId);
+                if (existingUser == null)
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status404NotFound;
+                    response.Message = $"User account for tenant not found";
+                    return NotFound(response);
+                }
+
+                // Update User record (personal information)
+                existingUser.FullName = $"{updateDTO.FirstName} {updateDTO.LastName}";
+                existingUser.Email = updateDTO.Email;
+                existingUser.Mobile = updateDTO.Mobile;
+                existingUser.Gender = updateDTO.Gender;
+                existingUser.DateOfBirth = updateDTO.DateOfBirth;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+
+                await _userRepository.UpdateUserAsync(existingUser);
+
+                // Update Tenant record (tenant-specific information)
                 var tenant = new Tenant
                 {
                     Id = updateDTO.Id,
+                    UserId = existingTenant.UserId, // Preserve the link
                     OwnerId = updateDTO.OwnerId,
                     PropertyId = updateDTO.PropertyId,
                     UnitId = updateDTO.UnitId,
-                    FirstName = updateDTO.FirstName,
-                    LastName = updateDTO.LastName,
-                    Mobile = updateDTO.Mobile,
-                    Email = updateDTO.Email,
-                    Password = updateDTO.Password,
-                    Gender = updateDTO.Gender,
-                    FatherName = updateDTO.FatherName,
-                    DateOfBirth = updateDTO.DateOfBirth,
                     PermanentAddress = updateDTO.PermanentAddress,
                     CurrentAddress = updateDTO.CurrentAddress,
                     RentAmount = updateDTO.RentAmount,
@@ -326,7 +445,17 @@ namespace RENTORA.API.Controllers
                 response.Success = true;
                 response.Status = StatusCodes.Status200OK;
                 response.Message = "Tenant updated successfully";
-                response.data = updatedTenant;
+                response.data = new
+                {
+                    Tenant = updatedTenant,
+                    User = new
+                    {
+                        existingUser.Id,
+                        existingUser.Email,
+                        existingUser.Mobile,
+                        existingUser.FullName
+                    }
+                };
                 return Ok(response);
             }
             catch (Exception ex)

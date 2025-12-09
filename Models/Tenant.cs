@@ -9,20 +9,14 @@ namespace RENTARA.API.Models
         public string PropertyId { get; set; } = string.Empty;
         public string UnitId { get; set; } = string.Empty;
         public string OwnerId { get; set; } = string.Empty;
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Mobile { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string Otp { get; set; }
+        
+        // Link to User Account in Registration collection
+        // All personal data (name, email, mobile, password, gender, DOB) stored in Registration model
+        public string UserId { get; set; } = string.Empty;
 
-        public string Gender { get; set; }
-        public string FatherName { get; set; }    // optional
-        public DateTime? DateOfBirth { get; set; }
-
-        // Address Details
-        public string PermanentAddress { get; set; }
-        public string CurrentAddress { get; set; }
+        // Address Details (tenant-specific, not in Registration)
+        public string PermanentAddress { get; set; } = string.Empty;
+        public string CurrentAddress { get; set; } = string.Empty;
 
         // Rent & Agreement Info
         public decimal RentAmount { get; set; }
