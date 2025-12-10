@@ -33,30 +33,6 @@ namespace RENTORA.API.Controllers
             _logger = logger;
         }
 
-        //[HttpGet]
-        //[ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<ResponseModel>> GetAllTenants()
-        //{
-        //    ResponseModel response = new ResponseModel();
-        //    try
-        //    {
-        //        var users = await _userRepository.GetAllUsersAsync();
-        //        var tenants = await _tenantsRepository.GetAllAsync();
-        //        response.Success = true;
-        //        response.Status = StatusCodes.Status200OK;
-        //        response.Message = "Tenants retrieved successfully";
-        //        response.data = tenants;
-        //        return Ok(response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error retrieving tenants");
-        //        response.Success = false;
-        //        response.Status = StatusCodes.Status500InternalServerError;
-        //        response.Message = "An error occurred while retrieving tenants";
-        //        return StatusCode(500, response);
-        //    }
-        //}
         [HttpGet]
         [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAllTenants()
