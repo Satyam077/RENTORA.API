@@ -48,6 +48,9 @@ namespace RENTORA.API.Models.Enums
         [Display(Name = "User Login Otp")]
         UserLoginOtp,
 
+        [Display(Name = "Agreement Registration")]
+        AgreementRegistration,
+
         [Display(Name = "Helpdesk Query")]
         HelpdeskQuery,
     }
@@ -71,6 +74,23 @@ namespace RENTORA.API.Models.Enums
         DrivingLicense = 4 ,
         VoterId = 5,
         Other = 6
+    }
+    public enum AgreementType
+    {
+        Residential,
+        Commercial,
+        PG,
+        Office,
+        ShortTerm,
+        Other
+    }
+
+    public enum AgreementStatus
+    {
+        Draft,
+        Active,
+        Expired,
+        Terminated
     }
 }
 

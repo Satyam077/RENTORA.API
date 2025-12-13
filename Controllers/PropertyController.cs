@@ -14,13 +14,16 @@ namespace RENTORA.API.Controllers
     public class PropertyController : ControllerBase
     {
         private readonly IPropertyRepository _propertyRepository;
+        private readonly IFileUploadService _fileUploadService;
         private readonly ILogger<PropertyController> _logger;
 
         public PropertyController(
             IPropertyRepository propertyRepository,
+            IFileUploadService fileUploadService,
             ILogger<PropertyController> logger)
         {
             _propertyRepository = propertyRepository;
+            _fileUploadService = fileUploadService;
             _logger = logger;
         }
 
@@ -283,6 +286,120 @@ namespace RENTORA.API.Controllers
                 response.Success = false;
                 response.Status = StatusCodes.Status500InternalServerError;
                 response.Message = "An error occurred while deleting the property";
+                return StatusCode(500, response);
+            }
+        }
+
+        [HttpPost("upload-image")]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ResponseModel>> UploadPropertyImage(IFormFile file)
+        {
+            ResponseModel response = new ResponseModel();
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status400BadRequest;
+                    response.Message = "No file uploaded";
+                    return BadRequest(response);
+                }
+
+                // Allowed file types for property images
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+
+                // Validate file type
+                if (!_fileUploadService.IsValidFileType(file, allowedExtensions))
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status400BadRequest;
+                    response.Message = $"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}";
+                    return BadRequest(response);
+                }
+
+                // Validate file size (5MB max for images)
+                if (!_fileUploadService.IsValidFileSize(file, 5))
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status400BadRequest;
+                    response.Message = "File size exceeds 5MB limit";
+                    return BadRequest(response);
+                }
+
+                // Upload file to properties/images folder
+                var fileUrl = await _fileUploadService.UploadFileAsync(file, "properties/images");
+
+                response.Success = true;
+                response.Status = StatusCodes.Status200OK;
+                response.Message = "Image uploaded successfully";
+                response.data = new { fileUrl = fileUrl };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading property image");
+                response.Success = false;
+                response.Status = StatusCodes.Status500InternalServerError;
+                response.Message = $"An error occurred while uploading the image: {ex.Message}";
+                return StatusCode(500, response);
+            }
+        }
+
+        [HttpPost("upload-document")]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ResponseModel>> UploadPropertyDocument(IFormFile file)
+        {
+            ResponseModel response = new ResponseModel();
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status400BadRequest;
+                    response.Message = "No file uploaded";
+                    return BadRequest(response);
+                }
+
+                // Allowed file types for property documents
+                string[] allowedExtensions = { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png" };
+
+                // Validate file type
+                if (!_fileUploadService.IsValidFileType(file, allowedExtensions))
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status400BadRequest;
+                    response.Message = $"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}";
+                    return BadRequest(response);
+                }
+
+                // Validate file size (10MB max for documents)
+                if (!_fileUploadService.IsValidFileSize(file, 10))
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status400BadRequest;
+                    response.Message = "File size exceeds 10MB limit";
+                    return BadRequest(response);
+                }
+
+                // Upload file to properties/documents folder
+                var fileUrl = await _fileUploadService.UploadFileAsync(file, "properties/documents");
+
+                response.Success = true;
+                response.Status = StatusCodes.Status200OK;
+                response.Message = "Document uploaded successfully";
+                response.data = new { fileUrl = fileUrl };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading property document");
+                response.Success = false;
+                response.Status = StatusCodes.Status500InternalServerError;
+                response.Message = $"An error occurred while uploading the document: {ex.Message}";
                 return StatusCode(500, response);
             }
         }
