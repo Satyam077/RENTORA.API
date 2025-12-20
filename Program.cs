@@ -76,6 +76,7 @@ builder.Services.AddScoped<IUnitsRepository, UnitsRepository>();
 builder.Services.AddScoped<ITenantsRepository, TenantsRepository>();
 builder.Services.AddScoped<IAgreementRepository, AgreementRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IMaintenanceRepositoy, MaintenanceRepositoy>();
 
 
 

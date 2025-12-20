@@ -225,6 +225,7 @@ namespace RENTORA.API.Repository
             return new TenantDashboardDTO
             {
                 // Tenant Information
+                OwnerId = tenant.OwnerId,
                 TenantId = tenant.Id,
                 FullName = user.FullName,
                 Email = user.Email,

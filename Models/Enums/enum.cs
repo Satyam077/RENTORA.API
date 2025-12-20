@@ -92,5 +92,25 @@ namespace RENTORA.API.Models.Enums
         Expired,
         Terminated
     }
-}
 
+    public enum Status 
+    {
+        Active,
+        Inactive,
+        Pending,
+        Deleted,
+        Open,
+        Closed,
+        InProgress,
+        Scheduled
+
+    }
+
+    public enum Priority
+    {
+        Low,
+        Medium,
+        High
+    }
+
+}

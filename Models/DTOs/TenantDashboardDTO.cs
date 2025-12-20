@@ -6,6 +6,7 @@ namespace RENTORA.API.Models.DTOs
     public class TenantDashboardDTO
     {
         // Tenant Information
+        public string OwnerId { get; set; }
         public string TenantId { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
