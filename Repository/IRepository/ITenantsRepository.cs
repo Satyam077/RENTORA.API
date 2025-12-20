@@ -21,5 +21,8 @@ namespace RENTORA.API.Repository.IRepository
         Task<IEnumerable<TenantResponseDTO>> GetTenantsByOwnerIdWithUserDataAsync(string ownerId);
         Task<IEnumerable<TenantResponseDTO>> GetTenantsByPropertyIdWithUserDataAsync(string propertyId);
         Task<IEnumerable<TenantResponseDTO>> GetTenantsByUnitIdWithUserDataAsync(string unitId);
+        
+        // Dashboard method with property and unit joins
+        Task<TenantDashboardDTO?> GetTenantDashboardDataAsync(string userId);
     }
 }

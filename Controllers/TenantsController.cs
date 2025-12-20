@@ -476,5 +476,39 @@ namespace RENTORA.API.Controllers
                 return StatusCode(500, response);
             }
         }
+
+        [HttpGet("dashboard/{userId}")]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ResponseModel>> GetTenantDashboard(string userId)
+        {
+            ResponseModel response = new ResponseModel();
+            try
+            {
+                var dashboardData = await _tenantsRepository.GetTenantDashboardDataAsync(userId);
+                
+                if (dashboardData == null)
+                {
+                    response.Success = false;
+                    response.Status = StatusCodes.Status404NotFound;
+                    response.Message = $"Tenant dashboard data not found for user ID '{userId}'";
+                    return NotFound(response);
+                }
+
+                response.Success = true;
+                response.Status = StatusCodes.Status200OK;
+                response.Message = "Tenant dashboard data retrieved successfully";
+                response.data = dashboardData;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving tenant dashboard for user ID: {UserId}", userId);
+                response.Success = false;
+                response.Status = StatusCodes.Status500InternalServerError;
+                response.Message = "An error occurred while retrieving the tenant dashboard";
+                return StatusCode(500, response);
+            }
+        }
     }
 }

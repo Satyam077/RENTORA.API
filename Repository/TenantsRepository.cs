@@ -178,5 +178,86 @@ namespace RENTORA.API.Repository
 
             return result;
         }
+
+        /// <summary>
+        /// Get comprehensive dashboard data for a tenant by user ID
+        /// Joins data from Tenants, Users, Properties, and Units collections
+        /// </summary>
+        public async Task<TenantDashboardDTO?> GetTenantDashboardDataAsync(string userId)
+        {
+            // Find the tenant by UserId
+            var tenant = await _ctx.Tenants.Find(t => t.UserId == userId).FirstOrDefaultAsync();
+            if (tenant == null) return null;
+
+            // Get user data
+            var user = await _ctx.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null) return null;
+
+            // Get property data
+            var property = await _ctx.Properties.Find(p => p.Id == tenant.PropertyId).FirstOrDefaultAsync();
+            
+            // Get unit data
+            var unit = await _ctx.Units.Find(u => u.Id == tenant.UnitId).FirstOrDefaultAsync();
+
+            // Calculate days until lease end
+            var daysUntilLeaseEnd = (int)(tenant.AgreementEndDate - DateTime.UtcNow).TotalDays;
+
+            // Calculate next rent due date
+            var today = DateTime.UtcNow;
+            var nextRentDueDate = new DateTime(today.Year, today.Month, tenant.RentDueDay);
+            if (nextRentDueDate < today)
+            {
+                nextRentDueDate = nextRentDueDate.AddMonths(1);
+            }
+
+            // Calculate payment progress (example: 75% if rent is approaching)
+            var daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
+            var daysPassed = today.Day;
+            var paymentProgress = tenant.IsRentPending ? ((daysPassed * 100) / daysInMonth) : 75;
+
+            // Build property address string
+            var propertyAddress = "";
+            if (property != null && property.Address != null)
+            {
+                propertyAddress = $"{property.Address.HouseNo}, {property.Address.Street}, {property.Address.City}";
+            }
+
+            return new TenantDashboardDTO
+            {
+                // Tenant Information
+                TenantId = tenant.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Mobile = user.Mobile,
+                ProfileImageUrl = user.ProfileImageUrl ?? string.Empty,
+
+                // Property Information
+                PropertyId = tenant.PropertyId,
+                PropertyName = property?.PropertyName ?? "N/A",
+                PropertyAddress = propertyAddress,
+
+                // Unit Information
+                UnitId = tenant.UnitId,
+                UnitName = unit?.UnitName ?? "N/A",
+
+                // Lease Information
+                AgreementStartDate = tenant.AgreementStartDate,
+                AgreementEndDate = tenant.AgreementEndDate,
+                IsAgreementExpired = tenant.IsAgreementExpired,
+                DaysUntilLeaseEnd = daysUntilLeaseEnd,
+
+                // Rent Information
+                RentAmount = tenant.RentAmount,
+                SecurityDeposit = tenant.SecurityDeposit,
+                RentDueDay = tenant.RentDueDay,
+                NextRentDueDate = nextRentDueDate,
+                IsRentPending = tenant.IsRentPending,
+                PaymentProgress = paymentProgress,
+
+                // Status
+                IsActiveTenant = tenant.IsActiveTenant,
+                MoveInDate = tenant.MoveInDate
+            };
+        }
     }
 }
