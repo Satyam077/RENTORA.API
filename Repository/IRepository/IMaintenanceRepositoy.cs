@@ -16,6 +16,7 @@ namespace RENTORA.API.Repository.IRepository
         Task<Maintenance?> UpdateAsync(Maintenance maintenance);
         Task<bool> DeleteAsync(string id);
         Task<Maintenance?> UpdateStatusAsync(string id, Status status);
+        Task<Maintenance?> UpdatePriorityAsync(string id, Priority priority);
         Task<Maintenance?> ScheduleMaintenanceAsync(string id, DateTime scheduledDate);
         Task<Maintenance?> RateMaintenanceAsync(string id, double rating);
     }

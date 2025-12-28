@@ -158,6 +158,22 @@ namespace RENTORA.API.Repository
             return result;
         }
 
+        public async Task<Maintenance?> UpdatePriorityAsync(string id, Priority priority)
+        {
+            var update = Builders<Maintenance>.Update
+                .Set(m => m.Priority, priority)
+                .Set(m => m.UpdatedAt, DateTime.UtcNow)
+                .Inc(m => m.UpdateCount, 1);
+            
+            var result = await _maintenance.FindOneAndUpdateAsync(
+                m => m.Id == id && !m.IsDeleted,
+                update,
+                new FindOneAndUpdateOptions<Maintenance> { ReturnDocument = ReturnDocument.After }
+            );
+            
+            return result;
+        }
+
         public async Task<Maintenance?> ScheduleMaintenanceAsync(string id, DateTime scheduledDate)
         {
             var update = Builders<Maintenance>.Update

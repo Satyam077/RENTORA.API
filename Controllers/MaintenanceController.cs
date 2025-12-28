@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RENTORA.API.Models;
+using RENTORA.API.Models.DTOs;
 using RENTORA.API.Models.Enums;
 using RENTORA.API.Repository.IRepository;
 
@@ -238,6 +239,51 @@ namespace RENTORA.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error rating maintenance", error = ex.Message });
+            }
+        }
+
+        [HttpPatch("{id}/priority")]
+        public async Task<IActionResult> UpdatePriority(string id, [FromBody] Priority priority)
+        {
+            try
+            {
+                var updatedMaintenance = await _maintenanceRepository.UpdatePriorityAsync(id, priority);
+                if (updatedMaintenance == null)
+                    return NotFound(new { message = "Maintenance request not found" });
+
+                return Ok(updatedMaintenance);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating maintenance priority", error = ex.Message });
+            }
+        }
+
+        [HttpPatch("{id}/update-fields")]
+        public async Task<IActionResult> UpdateFields(string id, [FromBody] MaintenanceUpdateDTO updateDto)
+        {
+            try
+            {
+                var maintenance = await _maintenanceRepository.GetByIdAsync(id);
+                if (maintenance == null)
+                    return NotFound(new { message = "Maintenance request not found" });
+
+                // Update only the fields that are provided
+                if (updateDto.Status.HasValue)
+                    maintenance.Status = updateDto.Status.Value;
+                
+                if (updateDto.Priority.HasValue)
+                    maintenance.Priority = updateDto.Priority.Value;
+                
+                if (updateDto.ScheduledDate.HasValue)
+                    maintenance.ScheduledDate = updateDto.ScheduledDate.Value;
+
+                var updatedMaintenance = await _maintenanceRepository.UpdateAsync(maintenance);
+                return Ok(updatedMaintenance);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating maintenance fields", error = ex.Message });
             }
         }
     }
