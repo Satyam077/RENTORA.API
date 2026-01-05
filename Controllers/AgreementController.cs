@@ -36,7 +36,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAllAgreements()
         {
             ResponseModel response = new ResponseModel();
@@ -63,8 +62,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> GetAgreementById(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -97,7 +94,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("owner/{ownerId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAgreementsByOwnerId(string ownerId)
         {
             ResponseModel response = new ResponseModel();
@@ -121,7 +117,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("property/{propertyId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAgreementsByPropertyId(string propertyId)
         {
             ResponseModel response = new ResponseModel();
@@ -145,7 +140,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("unit/{unitId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAgreementsByUnitId(string unitId)
         {
             ResponseModel response = new ResponseModel();
@@ -169,7 +163,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("tenant/{tenantId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAgreementsByTenantId(string tenantId)
         {
             ResponseModel response = new ResponseModel();
@@ -193,8 +186,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> CreateAgreement([FromBody] AgreementCreateDTO createDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -257,7 +248,6 @@ namespace RENTORA.API.Controllers
                 catch (Exception emailEx)
                 {
                     _logger.LogError(emailEx, $"Failed to send welcome email to: {"tenants@yopmail.com"}");
-                    // Don't fail the entire operation if email fails
                 }
 
                 response.Success = true;
@@ -281,9 +271,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UpdateAgreement(string id, [FromBody] AgreementUpdateDTO updateDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -369,8 +356,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> DeleteAgreement(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -402,8 +387,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPost("upload-document")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UploadAgreementDocument(IFormFile file)
         {
             ResponseModel response = new ResponseModel();

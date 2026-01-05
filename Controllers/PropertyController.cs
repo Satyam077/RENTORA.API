@@ -28,7 +28,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAllProperties()
         {
             ResponseModel response = new ResponseModel();
@@ -52,8 +51,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> GetPropertyById(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -86,7 +83,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("owner/{ownerId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetPropertiesByOwnerId(string ownerId)
         {
             ResponseModel response = new ResponseModel();
@@ -110,8 +106,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> CreateProperty([FromBody] PropertyCreateDTO createDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -176,9 +170,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UpdateProperty(string id, [FromBody] PropertyUpdateDTO updateDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -258,8 +249,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> DeleteProperty(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -291,8 +280,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPost("upload-image")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UploadPropertyImage(IFormFile file)
         {
             ResponseModel response = new ResponseModel();
@@ -348,8 +335,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPost("upload-document")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UploadPropertyDocument(IFormFile file)
         {
             ResponseModel response = new ResponseModel();

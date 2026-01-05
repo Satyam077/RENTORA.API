@@ -5,12 +5,6 @@ namespace RENTORA.API.Helpers
 {
     public static class PasswordGenerator
     {
-        /// <summary>
-        /// Generates a secure random password
-        /// </summary>
-        /// <param name="length">Length of the password (default: 12)</param>
-        /// <param name="includeSpecialChars">Include special characters (default: true)</param>
-        /// <returns>A secure random password</returns>
         public static string GenerateSecurePassword(int length = 12, bool includeSpecialChars = true)
         {
             const string lowercase = "abcdefghijklmnopqrstuvwxyz";

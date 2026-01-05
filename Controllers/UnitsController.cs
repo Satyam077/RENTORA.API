@@ -24,7 +24,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAllUnits()
         {
             ResponseModel response = new ResponseModel();
@@ -48,8 +47,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> GetUnitById(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -82,7 +79,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("property/{propertyId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetUnitsByPropertyId(string propertyId)
         {
             ResponseModel response = new ResponseModel();
@@ -106,7 +102,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("owner/{ownerId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetUnitsByOwnerId(string ownerId)
         {
             ResponseModel response = new ResponseModel();
@@ -192,9 +187,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UpdateUnit(string id, [FromBody] UnitUpdateDTO updateDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -272,8 +264,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> DeleteUnit(string id)
         {
             ResponseModel response = new ResponseModel();

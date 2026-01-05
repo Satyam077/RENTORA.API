@@ -23,9 +23,7 @@ namespace RENTORA.API.Models.MongoDB
             }
             catch (Exception ex)
             {
-                // Log the error but don't crash the application
                 Console.WriteLine($"MongoDB connection failed: {ex.Message}");
-                // You might want to use a fallback or in-memory database here
             }
         }
         public IMongoCollection<Registration> Users => _database.GetCollection<Registration>("Registration");

@@ -34,7 +34,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetAllTenants()
         {
             ResponseModel response = new ResponseModel();
@@ -63,8 +62,6 @@ namespace RENTORA.API.Controllers
 
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> GetTenantById(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -97,7 +94,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("owner/{ownerId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetTenantsByOwnerId(string ownerId)
         {
             ResponseModel response = new ResponseModel();
@@ -121,7 +117,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("property/{propertyId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetTenantsByPropertyId(string propertyId)
         {
             ResponseModel response = new ResponseModel();
@@ -145,7 +140,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("unit/{unitId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResponseModel>> GetTenantsByUnitId(string unitId)
         {
             ResponseModel response = new ResponseModel();
@@ -323,9 +317,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UpdateTenant(string id, [FromBody] TenantUpdateDTO updateDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -445,8 +436,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> DeleteTenant(string id)
         {
             ResponseModel response = new ResponseModel();
@@ -478,8 +467,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("dashboard/{userId}")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResponseModel>> GetTenantDashboard(string userId)
         {
             ResponseModel response = new ResponseModel();

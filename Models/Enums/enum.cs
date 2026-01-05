@@ -45,6 +45,9 @@ namespace RENTORA.API.Models.Enums
         [Display(Name = "Tenants Registration")]
         TenantsRegistration,
 
+        [Display(Name = "Forgot Password")]
+        ForgotPassword,
+
         [Display(Name = "User Login Otp")]
         UserLoginOtp,
 
@@ -52,7 +55,7 @@ namespace RENTORA.API.Models.Enums
         AgreementRegistration,
 
         [Display(Name = "Helpdesk Query")]
-        HelpdeskQuery,
+        HelpdeskQuery
     }
     public enum PropertyType
     {

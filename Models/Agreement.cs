@@ -19,7 +19,6 @@ namespace RENTARA.API.Models
         public string AgreementNumber { get; set; }
         public AgreementType AgreementType { get; set; }
 
-        // Duration
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

@@ -79,7 +79,7 @@ namespace RENTORA.API.Controllers
                     PasswordHash = Convert.ToBase64String(passwordHash),
                     PasswordSalt = Convert.ToBase64String(passwordSalt),
                     ProfileImageUrl = userDto.ProfileImageUrl,
-                    ApplicationUrl = userDto.ApplicationUrl ?? "https://rentora.in",
+                    ApplicationUrl = userDto.ApplicationUrl ?? "https://rentora.com",
                     Address = address,
                     Role = userDto.Role,
                     TenantId = userDto.TenantId,
@@ -442,6 +442,127 @@ namespace RENTORA.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = $"Failed to upload profile picture: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+
+                if (user == null)
+                {
+                    return NotFound(new { success = false, message = "No account found with this email address." });
+                }
+
+                // Generate random password
+                var newPassword = Helpers.PasswordGenerator.GenerateSecurePassword(10, true);
+
+                // Create password hash and salt
+                PasswordHelper.CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+                // Update user password
+                var result = await _userRepository.UpdatePasswordAsync(
+                    user.Id,
+                    Convert.ToBase64String(passwordHash),
+                    Convert.ToBase64String(passwordSalt)
+                );
+
+                if (!result)
+                {
+                    return StatusCode(500, new { success = false, message = "Failed to reset password. Please try again." });
+                }
+
+                // Send email with new password
+                var tokens = new Dictionary<string, string>
+                {
+                    { "User", user.FullName },
+                    { "ApplicationUrl", "www.rentora.com" },
+                    { "Email", user.Email },
+                    { "Password", newPassword },
+                    { "SupportStaff", "RENTORA PMS" },
+                    { "SupportContact", "+91 1234567899" },
+                    { "SupportEmail", "uniquextech7@gmail.com"},
+                    { "CurrentDate", DateTime.UtcNow.ToShortDateString()}
+                };
+
+                await _emailService.SendTemplateEmailAsync(
+                    user.Email,
+                    user.FullName,
+                    EmailTemplateName.ForgotPassword,
+                    tokens
+                );
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "A new password has been sent to your email address."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Failed to process request: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+
+                if (user == null)
+                {
+                    return NotFound(new { success = false, message = "User not found." });
+                }
+
+                // Verify old password
+                var storedHash = Convert.FromBase64String(user.PasswordHash);
+                var storedSalt = Convert.FromBase64String(user.PasswordSalt);
+
+                if (!PasswordHelper.VerifyPasswordHash(dto.OldPassword, storedHash, storedSalt))
+                {
+                    return BadRequest(new { success = false, message = "Old password is incorrect." });
+                }
+
+                // Create new password hash and salt
+                PasswordHelper.CreatePasswordHash(dto.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+                // Update user password
+                var result = await _userRepository.UpdatePasswordAsync(
+                    user.Id,
+                    Convert.ToBase64String(passwordHash),
+                    Convert.ToBase64String(passwordSalt)
+                );
+
+                if (!result)
+                {
+                    return StatusCode(500, new { success = false, message = "Failed to update password. Please try again." });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Password has been reset successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Failed to reset password: {ex.Message}" });
             }
         }
     }

@@ -67,5 +67,16 @@ namespace RENTORA.API.Repository
         {
             return await _ctx.Users.Find(u => !u.IsDeleted).ToListAsync();
         }
+
+        public async Task<bool> UpdatePasswordAsync(string userId, string passwordHash, string passwordSalt)
+        {
+            var update = Builders<Registration>.Update
+                .Set(u => u.PasswordHash, passwordHash)
+                .Set(u => u.PasswordSalt, passwordSalt)
+                .Set(u => u.UpdatedAt, DateTime.UtcNow);
+            
+            var result = await _ctx.Users.UpdateOneAsync(u => u.Id == userId && !u.IsDeleted, update);
+            return result.ModifiedCount > 0;
+        }
     }
 }

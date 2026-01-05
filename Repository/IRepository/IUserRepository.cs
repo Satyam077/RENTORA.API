@@ -12,5 +12,6 @@ namespace RENTORA.API.Repository.IRepository
         Task<bool> UpdateUserAsync(Registration user);
         Task<bool> DeleteUserAsync(string id);
         Task<IEnumerable<Registration>> GetAllUsersAsync();
+        Task<bool> UpdatePasswordAsync(string userId, string passwordHash, string passwordSalt);
     }
 }

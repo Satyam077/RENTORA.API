@@ -20,7 +20,6 @@ namespace RENTORA.API.Models
         public int UpdateCount { get; set; } = 0;
         public double? Rating { get; set; }
         
-        // Navigation properties (not stored in DB, populated in queries)
         [BsonIgnore]
         public PropertyModel? Property { get; set; }
         

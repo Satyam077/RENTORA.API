@@ -24,7 +24,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<EmailTemplateResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<EmailTemplateResponseDTO>>> GetAllTemplates()
         {
             try
@@ -41,8 +40,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(EmailTemplateResponseDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<EmailTemplateResponseDTO>> GetTemplateById(string id)
         {
             try
@@ -64,7 +61,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("applicable/{applicableFor}")]
-        [ProducesResponseType(typeof(IEnumerable<EmailTemplateResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<EmailTemplateResponseDTO>>> GetTemplatesByApplicableFor(string applicableFor)
         {
             try
@@ -81,8 +77,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(EmailTemplateResponseDTO), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<EmailTemplateResponseDTO>> CreateTemplate([FromBody] EmailTemplateCreateDTO createDTO)
         {
             try
@@ -129,9 +123,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(EmailTemplateResponseDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<EmailTemplateResponseDTO>> UpdateTemplate(string id, [FromBody] EmailTemplateUpdateDTO updateDTO)
         {
             ResponseModel response = new ResponseModel();
@@ -187,8 +178,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteTemplate(string id)
         {
             try
@@ -210,7 +199,6 @@ namespace RENTORA.API.Controllers
         }
 
         [HttpGet("exists/{templateName}")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<ActionResult<bool>> CheckTemplateExists(string templateName)
         {
             try
