@@ -252,6 +252,155 @@ namespace RENTORA.API.Services
                 return false;
             }
         }
+
+        public async Task<GoogleAuthResponse> GoogleAuthAsync(GoogleAuthDTO googleAuthDto)
+        {
+            try
+            {
+                // Validate Google ID Token
+                var payload = await Google.Apis.Auth.GoogleJsonWebSignature.ValidateAsync(googleAuthDto.IdToken);
+
+                if (payload == null)
+                {
+                    return new GoogleAuthResponse
+                    {
+                        Success = false,
+                        Message = "Invalid Google token"
+                    };
+                }
+
+                var googleUser = new GoogleUserInfo
+                {
+                    Email = payload.Email,
+                    FullName = payload.Name ?? $"{payload.GivenName} {payload.FamilyName}".Trim(),
+                    FirstName = payload.GivenName ?? string.Empty,
+                    LastName = payload.FamilyName ?? string.Empty,
+                    ProfilePictureUrl = payload.Picture ?? string.Empty,
+                    IsEmailVerified = payload.EmailVerified,
+                };
+
+                // Check if user already exists
+                var existingUser = await _userRepository.GetUserByEmailOrMobileAsync(payload.Email);
+
+                if (existingUser != null)
+                {
+                    // User exists - Login scenario
+                    if (!existingUser.IsActive)
+                    {
+                        return new GoogleAuthResponse
+                        {
+                            Success = false,
+                            Message = CommonMessage.MessageError.InActive,
+                            IsNewUser = false
+                        };
+                    }
+
+                    // Update profile picture if changed
+                    if (!string.IsNullOrEmpty(googleUser.ProfilePictureUrl) && 
+                        existingUser.ProfileImageUrl != googleUser.ProfilePictureUrl)
+                    {
+                        existingUser.ProfileImageUrl = googleUser.ProfilePictureUrl;
+                        await _userRepository.UpdateUserAsync(existingUser);
+                    }
+
+                    var token = GenerateJwtToken(existingUser);
+
+                    return new GoogleAuthResponse
+                    {
+                        Success = true,
+                        Message = CommonMessage.MessageSuccess.LoginSuccess,
+                        IsNewUser = false,
+                        Token = token,
+                        User = new UserInfo
+                        {
+                            Id = existingUser.Id,
+                            FullName = existingUser.FullName,
+                            Email = existingUser.Email,
+                            Mobile = existingUser.Mobile,
+                            Role = existingUser.Role,
+                            ProfileImageUrl = existingUser.ProfileImageUrl,
+                            IsEmailVerified = existingUser.IsEmailVerified,
+                            IsMobileVerified = existingUser.IsMobileVerified
+                        }
+                    };
+                }
+                else
+                {
+                    // User does not exist - Return Google user info for registration
+                    if (googleAuthDto.IsRegistration)
+                    {
+                        // Create new user with Google data
+                        var newUser = new Registration
+                        {
+                            FullName = googleUser.FullName,
+                            Email = googleUser.Email,
+                            ProfileImageUrl = googleUser.ProfilePictureUrl,
+                            Role = googleAuthDto.Role,
+                            IsEmailVerified = googleUser.IsEmailVerified,
+                            IsMobileVerified = false,
+                            IsOtpVerified = false,
+                            PasswordHash = string.Empty, // No password for Google users
+                            PasswordSalt = string.Empty,
+                            CreatedBy = "Google OAuth",
+                            IsActive = true,
+                            IsDeleted = false,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        var createdUser = await _userRepository.CreateUserAsync(newUser);
+                        var token = GenerateJwtToken(createdUser);
+
+                        return new GoogleAuthResponse
+                        {
+                            Success = true,
+                            Message = CommonMessage.MessageSuccess.Success,
+                            IsNewUser = true,
+                            GoogleUser = googleUser,
+                            Token = token,
+                            User = new UserInfo
+                            {
+                                Id = createdUser.Id,
+                                FullName = createdUser.FullName,
+                                Email = createdUser.Email,
+                                Mobile = createdUser.Mobile,
+                                Role = createdUser.Role,
+                                ProfileImageUrl = createdUser.ProfileImageUrl,
+                                IsEmailVerified = createdUser.IsEmailVerified,
+                                IsMobileVerified = createdUser.IsMobileVerified
+                            }
+                        };
+                    }
+                    else
+                    {
+                        // Login attempt but user not registered
+                        return new GoogleAuthResponse
+                        {
+                            Success = false,
+                            Message = "User not registered. Please register first.",
+                            IsNewUser = true,
+                            GoogleUser = googleUser
+                        };
+                    }
+                }
+            }
+            catch (Google.Apis.Auth.InvalidJwtException)
+            {
+                return new GoogleAuthResponse
+                {
+                    Success = false,
+                    Message = "Invalid or expired Google token"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GoogleAuthResponse
+                {
+                    Success = false,
+                    Message = $"Google authentication failed: {ex.Message}"
+                };
+            }
+        }
+
         public string GenerateJwtToken(Registration user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -264,7 +413,7 @@ namespace RENTORA.API.Services
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim(ClaimTypes.MobilePhone, user.Mobile ?? string.Empty),
                 new Claim("ProfileImageUrl", user.ProfileImageUrl ?? string.Empty),
-                new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), user.Role)!)
+                new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), user.Role) ?? "Tenants")
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

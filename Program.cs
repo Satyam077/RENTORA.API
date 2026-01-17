@@ -11,6 +11,7 @@ using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
 using System.Text;
 using System.IO;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +67,15 @@ builder.Services.AddAuthentication(options =>
     options.SlidingExpiration = true;
 });
 
+//var google = builder.Configuration.GetSection("Authentication:Google");
+//builder.Services.AddAuthentication()
+//    .AddGoogle(options =>
+//    {
+//        options.ClientId = google["ClientId"]!;
+//        options.ClientSecret = google["SecretKey"]!;
+//        options.CallbackPath = "/auth/google/callback";
+//    });
+
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -92,7 +102,7 @@ builder.Services.AddCors(options =>
     
     options.AddPolicy("AllowCredentials", builder =>
     {
-        builder.WithOrigins("http://localhost:4200", "https://localhost:4200") // Add your frontend URLs
+        builder.WithOrigins("http://localhost:4200", "https://localhost:4200", "https://agent-696688dc22deb24f8ed59d3c--rentora-ui.netlify.app") // Add your frontend URLs
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();

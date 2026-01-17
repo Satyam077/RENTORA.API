@@ -92,5 +92,25 @@ namespace RENTORA.API.Controllers
 
             return Ok(new { success = true, message = CommonMessage.MessageSuccess.OtpVerified });
         }
+
+        [HttpPost("google")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleAuth([FromBody] GoogleAuthDTO googleAuthDto)
+        {
+            if (string.IsNullOrWhiteSpace(googleAuthDto.IdToken))
+            {
+                return BadRequest(new { success = false, message = "Google ID token is required" });
+            }
+
+            var result = await _authService.GoogleAuthAsync(googleAuthDto);
+
+            if (!result.Success && !result.IsNewUser)
+            {
+                return Unauthorized(result);
+            }
+
+            return Ok(result);
+        }
     }
 }
+
