@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using RENTARA.API.Models;
+using RENTORA.API.Models;
 using RENTORA.API.Models.MongoDB;
 using RENTORA.API.Repository.IRepository;
 
@@ -16,17 +17,54 @@ namespace RENTORA.API.Repository
 
         public async Task<IEnumerable<PropertyModel>> GetAllAsync()
         {
-            return await _ctx.Properties.Find(_ => true).ToListAsync();
+            var properties = await _ctx.Properties.Find(_ => true).ToListAsync();
+            
+            // Calculate unit counts for each property
+            foreach (var property in properties)
+            {
+                await CalculateUnitCountsAsync(property);
+            }
+            
+            return properties;
         }
 
         public async Task<PropertyModel?> GetByIdAsync(string id)
         {
-            return await _ctx.Properties.Find(p => p.Id == id).FirstOrDefaultAsync();
+            var property = await _ctx.Properties.Find(p => p.Id == id).FirstOrDefaultAsync();
+            
+            if (property != null)
+            {
+                await CalculateUnitCountsAsync(property);
+            }
+            
+            return property;
         }
 
         public async Task<IEnumerable<PropertyModel>> GetByOwnerIdAsync(string ownerId)
         {
-            return await _ctx.Properties.Find(p => p.OwnerId == ownerId).ToListAsync();
+            var properties = await _ctx.Properties.Find(p => p.OwnerId == ownerId).ToListAsync();
+            
+            // Calculate unit counts for each property from Units collection
+            foreach (var property in properties)
+            {
+                await CalculateUnitCountsAsync(property);
+            }
+            
+            return properties;
+        }
+
+        /// <summary>
+        /// Helper method to calculate TotalUnits and OccupiedUnits from the Units collection
+        /// </summary>
+        private async Task CalculateUnitCountsAsync(PropertyModel property)
+        {
+            if (property == null || string.IsNullOrEmpty(property.Id)) return;
+
+            var units = await _ctx.Units.Find(u => u.PropertyId == property.Id).ToListAsync();
+            
+            property.TotalUnits = units.Count;
+            property.OccupiedUnits = units.Count(u => u.IsOccupied);
+            property.IsFullyOccupied = property.TotalUnits > 0 && property.OccupiedUnits == property.TotalUnits;
         }
 
         public async Task<PropertyModel> CreateAsync(PropertyModel property)
@@ -35,7 +73,7 @@ namespace RENTORA.API.Repository
             property.CreatedBy = "System";
             property.IsActive = true;
             
-            // Calculate total and occupied units
+            // Initialize unit counts (will be 0 for new properties)
             property.TotalUnits = property.Units?.Count ?? 0;
             property.OccupiedUnits = property.Units?.Count(u => u.IsOccupied) ?? 0;
             property.IsFullyOccupied = property.TotalUnits > 0 && property.OccupiedUnits == property.TotalUnits;
@@ -49,10 +87,8 @@ namespace RENTORA.API.Repository
             property.UpdatedAt = DateTime.UtcNow;
             property.UpdatedBy = "System";
             
-            // Recalculate occupancy
-            property.TotalUnits = property.Units?.Count ?? 0;
-            property.OccupiedUnits = property.Units?.Count(u => u.IsOccupied) ?? 0;
-            property.IsFullyOccupied = property.TotalUnits > 0 && property.OccupiedUnits == property.TotalUnits;
+            // Recalculate occupancy from Units collection
+            await CalculateUnitCountsAsync(property);
 
             var result = await _ctx.Properties.ReplaceOneAsync(
                 p => p.Id == property.Id,

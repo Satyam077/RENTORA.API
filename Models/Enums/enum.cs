@@ -115,5 +115,37 @@ namespace RENTORA.API.Models.Enums
         Medium,
         High
     }
+    public enum Plans
+    {
+        Basic,
+        Standard,
+        Premium,
+        Enterprise
+    }
+    public enum PaymentFrequency
+    {
+        Monthly,
+        Quarterly,
+        HalfYearly,
+        Yearly
+    }
+    public enum PaymentMethod
+    {
+        CreditCard,
+        DebitCard,
+        NetBanking,
+        UPI,
+        Wallet,
+        Cash,
+        Cheque
+    }
+    public enum PaymentStatus
+    {
+        Pending,
+        Completed,
+        Failed,
+        Cancelled,
+        Refunded
+    }
 
 }

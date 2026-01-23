@@ -108,22 +108,25 @@ namespace RENTORA.API.Controllers
                     };
 
 
-                EmailTemplateName templateName = newUser.Role switch
+                if (existingUser.Role != Role.SuperAdmin)
                 {
-                    Role.SuperAdmin => EmailTemplateName.SuperAdminRegistration,
-                    Role.Admin => EmailTemplateName.AdminRegistration,
-                    Role.Landlords => EmailTemplateName.LandlordsRegistration,
-                    Role.Agents => EmailTemplateName.AgentRegistration,
-                    Role.Tenants => EmailTemplateName.TenantsRegistration,
-                    _ => EmailTemplateName.HelpdeskQuery
-                };
+                    EmailTemplateName templateName = existingUser.Role switch
+                    {
+                        //Role.SuperAdmin => EmailTemplateName.SuperAdminRegistration,
+                        Role.Admin => EmailTemplateName.AdminRegistration,
+                        Role.Landlords => EmailTemplateName.LandlordsRegistration,
+                        Role.Agents => EmailTemplateName.AgentRegistration,
+                        Role.Tenants => EmailTemplateName.TenantsRegistration,
+                        _ => EmailTemplateName.HelpdeskQuery
+                    };
 
-                await _emailService.SendTemplateEmailAsync(
-                    newUser.Email,
-                    newUser.FullName,
-                    templateName,
-                    tokens
-                );
+                    await _emailService.SendTemplateEmailAsync(
+                        existingUser.Email,
+                        existingUser.FullName,
+                        templateName,
+                        tokens
+                    );
+                }
 
                 // Return user without sensitive data
                 return Ok(new
@@ -224,23 +227,26 @@ namespace RENTORA.API.Controllers
                        { "CurrentYear",DateTime.UtcNow.Year.ToString()}
                     };
 
-
-                EmailTemplateName templateName = existingUser.Role switch
+                if(existingUser.Role != Role.SuperAdmin)
                 {
-                    Role.SuperAdmin => EmailTemplateName.SuperAdminRegistration,
-                    Role.Admin => EmailTemplateName.AdminRegistration,
-                    Role.Landlords => EmailTemplateName.LandlordsRegistration,
-                    Role.Agents => EmailTemplateName.AgentRegistration,
-                    Role.Tenants => EmailTemplateName.TenantsRegistration,
-                    _ => EmailTemplateName.HelpdeskQuery
-                };
+                    EmailTemplateName templateName = existingUser.Role switch
+                    {
+                        //Role.SuperAdmin => EmailTemplateName.SuperAdminRegistration,
+                        Role.Admin => EmailTemplateName.AdminRegistration,
+                        Role.Landlords => EmailTemplateName.LandlordsRegistration,
+                        Role.Agents => EmailTemplateName.AgentRegistration,
+                        Role.Tenants => EmailTemplateName.TenantsRegistration,
+                        _ => EmailTemplateName.HelpdeskQuery
+                    };
 
-                await _emailService.SendTemplateEmailAsync(
-                    existingUser.Email,
-                    existingUser.FullName,
-                    templateName,
-                    tokens
-                );
+                    await _emailService.SendTemplateEmailAsync(
+                        existingUser.Email,
+                        existingUser.FullName,
+                        templateName,
+                        tokens
+                    );
+                }
+                
 
                 if (!result)
                 {
