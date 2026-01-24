@@ -6,9 +6,6 @@ using RENTORA.API.Models.Enums;
 using RENTORA.API.Repository.IRepository;
 using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace RENTORA.API.Controllers
 {

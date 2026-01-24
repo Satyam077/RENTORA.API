@@ -34,6 +34,7 @@ namespace RENTORA.API.Models.MongoDB
         public IMongoCollection<Agreement> Agreements => _database.GetCollection<Agreement>("Agreements");
         public IMongoCollection<Maintenance> Maintenance => _database.GetCollection<Maintenance>("Maintenance");
         public IMongoCollection<Features> Features => _database.GetCollection<Features>("Features");
+        public IMongoCollection<Plans> Plans => _database.GetCollection<Plans>("Plans");
     }
 
 }

@@ -278,6 +278,8 @@ builder.Services.AddScoped<IAgreementRepository, AgreementRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IMaintenanceRepositoy, MaintenanceRepositoy>();
 builder.Services.AddScoped<IFeaturesRepository, FeaturesRepository>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
 // -------------------- SWAGGER (DEV ONLY) --------------------
 builder.Services.AddEndpointsApiExplorer();
