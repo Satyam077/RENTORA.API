@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RENTORA.API.Repository.IRepository;
 
 namespace RENTORA.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AdminDashboadController : ControllerBase
     {
         private readonly IAdminRepository _adminRepository;

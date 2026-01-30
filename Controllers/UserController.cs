@@ -15,12 +15,14 @@ namespace RENTORA.API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IPropertyRepository _propertyRepository;
         private readonly IEmailService _emailService;
 
-        public UserController(IUserRepository userRepository ,IEmailService emailService)
+        public UserController(IUserRepository userRepository ,IEmailService emailService, IPropertyRepository propertyRepository)
         {
             _userRepository = userRepository;
             _emailService = emailService;
+            _propertyRepository = propertyRepository;
         }
 
         [HttpPost("create")]
@@ -37,6 +39,9 @@ namespace RENTORA.API.Controllers
                 var existingUser = await _userRepository.GetUserByEmailOrMobileAsync(
                     userDto.Email ?? userDto.Mobile
                 );
+
+                var property = await _propertyRepository.GetByIdAsync(userDto.OwnerId);
+                var owner = await _userRepository.GetUserByIdAsync(userDto.OwnerId);
 
                 if (existingUser != null)
                 {
@@ -69,7 +74,7 @@ namespace RENTORA.API.Controllers
                 var newUser = new Registration
                 {
                     FullName = userDto.FullName,
-                    Email = userDto.Email,
+                    Email = userDto.Email.ToLower().Trim(),
                     Mobile = userDto.Mobile,
                     Gender = userDto.Gender,
                     DateOfBirth = userDto.DateOfBirth,
@@ -97,11 +102,13 @@ namespace RENTORA.API.Controllers
                        { "ApplicationUrl", "www.rentora.com" },
                        { "Email", newUser.Email },
                        { "Password", userDto.Password },
-                       { "SupportStaff", "RENTORA PMS" },
-                       { "SupportContact", "+91 1234567899" },
-                       { "PropertyName", "Super Tech Noida" },
-                       { "SupportEmail", "uniquextech7@gmail.com"},
-                       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
+                       { "SupportStaff", property?.PropertyName ?? " " },
+                       { "Address", property?.Address.HouseNo +  property?.Address.Street + 
+                       property?.Address.Street + property?.Address.District + property?.Address.PinCode},
+                       { "SupportContact", owner.Mobile ?? " "},
+                       { "PropertyName", property?.PropertyName ?? " "},
+                       { "SupportEmail", owner.Email},
+                       { "CurrentYear",DateTime.UtcNow.ToString()}
                     };
 
 
@@ -159,6 +166,8 @@ namespace RENTORA.API.Controllers
             {
                 // Get existing user
                 var existingUser = await _userRepository.GetUserByIdAsync(userDto.Id);
+                var property = await _propertyRepository.GetByIdAsync(userDto.OwnerId);
+                var owner = await _userRepository.GetUserByIdAsync(userDto.OwnerId);
 
                 if (existingUser == null)
                 {
@@ -166,7 +175,7 @@ namespace RENTORA.API.Controllers
                 }
 
                 // Check if email or mobile is being changed and if it's already taken
-                if (existingUser.Email != userDto.Email || existingUser.Mobile != userDto.Mobile)
+                if (existingUser.Email.ToLower().Trim() != userDto.Email.ToLower().Trim() || existingUser.Mobile != userDto.Mobile)
                 {
                     var userWithSameEmailOrMobile = await _userRepository.GetUserByEmailOrMobileAsync(
                         userDto.Email ?? userDto.Mobile
@@ -198,7 +207,7 @@ namespace RENTORA.API.Controllers
 
                 // Update user properties
                 existingUser.FullName = userDto.FullName;
-                existingUser.Email = userDto.Email;
+                existingUser.Email = userDto.Email.ToLower().Trim();
                 existingUser.Mobile = userDto.Mobile;
                 existingUser.Gender = userDto.Gender;
                 existingUser.DateOfBirth = userDto.DateOfBirth;
@@ -212,19 +221,20 @@ namespace RENTORA.API.Controllers
                 var result = await _userRepository.UpdateUserAsync(existingUser);
 
                 var tokens = new Dictionary<string, string>
-                    {
-                       { "FullName", existingUser.FullName },
-                       { "ApplicationUrl", "www.rentora.com" },
-                       { "Email", existingUser.Email },
-                       //{ "Password", userDto.Password },
-                       { "SupportStaff", "RENTORA PMS" },
-                       { "SupportContact", "+91 1234567899" },
-                       { "PropertyName", "Super Tech Noida" },
-                       { "SupportEmail", "uniquextech7@gmail.com"},
-                       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
-                    };
+    {
+       { "FullName", existingUser.FullName },
+       { "ApplicationUrl", "www.rentora.com" },
+       { "Email", existingUser.Email },
+       { "SupportStaff", property?.PropertyName ?? " " },
+       { "Address", property?.Address.HouseNo +  property?.Address.Street +
+       property?.Address.Street + property?.Address.District + property?.Address.PinCode},
+       { "SupportContact", owner.Mobile ?? " "},
+       { "PropertyName", property?.PropertyName ?? " "},
+       { "SupportEmail", owner.Email},
+       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
+    };
 
-                if(existingUser.Role != Role.SuperAdmin)
+                if (existingUser.Role != Role.SuperAdmin)
                 {
                     EmailTemplateName templateName = existingUser.Role switch
                     {
@@ -284,7 +294,7 @@ namespace RENTORA.API.Controllers
                         fullName = user.FullName,
                         gender = user.Gender,
                         dateOfBirth = user.DateOfBirth,
-                        email = user.Email,
+                        email = user.Email.ToLower().Trim(),
                         isEmailVerified = user.IsEmailVerified,
                         mobile = user.Mobile,
                         isMobileVerified = user.IsMobileVerified,

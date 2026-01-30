@@ -1,10 +1,12 @@
+using EllipticCurve;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using RENTARA.API.Models;
+using RENTORA.API.Helpers;
 using RENTORA.API.Models;
 using RENTORA.API.Models.DTOs;
 using RENTORA.API.Models.Enums;
-using RENTORA.API.Helpers;
 using RENTORA.API.Repository.IRepository;
 using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
@@ -17,20 +19,26 @@ namespace RENTORA.API.Controllers
     public class TenantsController : ControllerBase
     {
         private readonly ITenantsRepository _tenantsRepository;
+        private readonly IPropertyRepository _propertyRepository;
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
         private readonly ILogger<TenantsController> _logger;
+        private readonly IConfiguration _configuration;
 
         public TenantsController(
             ITenantsRepository tenantsRepository,
             IUserRepository userRepository,
             IEmailService emailService,
-            ILogger<TenantsController> logger)
+            ILogger<TenantsController> logger, IPropertyRepository propertyRepository,
+            IConfiguration configuration
+            )
         {
             _tenantsRepository = tenantsRepository;
             _userRepository = userRepository;
             _emailService = emailService;
             _logger = logger;
+            _propertyRepository = propertyRepository;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -189,6 +197,10 @@ namespace RENTORA.API.Controllers
 
                 // Check if mobile already exists in Users collection
                 var existingMobile = await _userRepository.GetUserByMobileAsync(createDTO.Mobile);
+
+                var property = await _propertyRepository.GetByIdAsync(createDTO.PropertyId);
+                var landlords = await _userRepository.GetUserByIdAsync(property.Id);
+
                 if (existingMobile != null)
                 {
                     response.Success = false;
@@ -262,12 +274,15 @@ namespace RENTORA.API.Controllers
                         { "FullName", $"{createDTO.FirstName} {createDTO.LastName}" },
                         { "Email", createDTO.Email },
                         { "Password", generatedPassword },
-                        { "PropertyName", createDTO.PropertyId },
-                        { "ApplicationUrl", "http://localhost:4200/login" }, // Update with your actual login URL
-                       { "SupportStaff", "RENTORA PMS" },
-                       { "SupportContact", "+91 1234567899" },
-                       { "SupportEmail", "uniquextech7@gmail.com"},
-                       { "CurrentYear",DateTime.UtcNow.Year.ToString()}
+                        { "PropertyName", property.PropertyName },
+                        { "ApplicationUrl", _configuration["BaseUrl:Url"] ?? "" },
+                       { "SupportStaff", property.PropertyName  },
+                       { "SupportContact", landlords?.Mobile ?? ""},
+                       { "SupportEmail", landlords ?.Email ?? ""},
+                       { "CurrentYear",DateTime.UtcNow.Year.ToString()},
+                       { "Address",$"{property?.Address?.HouseNo} " +
+                       $"{property?.Address?.Street}, {property?.Address?.District} - " +
+                       $"{property?.Address?.PinCode}" }
                     };
 
                     await _emailService.SendTemplateEmailAsync(
@@ -350,6 +365,9 @@ namespace RENTORA.API.Controllers
 
                 // Get the linked user account
                 var existingUser = await _userRepository.GetUserByIdAsync(existingTenant.UserId);
+
+                var property = await _propertyRepository.GetByIdAsync(updateDTO.PropertyId);
+                var landlords = await _userRepository.GetUserByIdAsync(property.OwnerId);
                 if (existingUser == null)
                 {
                     response.Success = false;
@@ -407,6 +425,37 @@ namespace RENTORA.API.Controllers
                     response.Status = StatusCodes.Status404NotFound;
                     response.Message = $"Tenant with ID '{id}' not found";
                     return NotFound(response);
+                }
+                try
+                {
+                    var emailTokens = new Dictionary<string, string>
+                    {
+                        { "FullName", existingUser.FullName },
+                        { "Email", existingUser.Email },
+                        { "PropertyName", property.PropertyName },
+                        { "ApplicationUrl", _configuration["BaseUrl:Url"] ?? "" },
+                       { "SupportStaff", property.PropertyName  },
+                       { "SupportContact", landlords?.Mobile ?? ""},
+                       { "SupportEmail", landlords ?.Email ?? ""},
+                       { "CurrentYear",DateTime.UtcNow.Year.ToString()},
+                       { "Address",$"{property?.Address?.HouseNo} " +
+                       $"{property?.Address?.Street}, {property?.Address?.District} - " +
+                       $"{property?.Address?.PinCode}" }
+                    };
+
+                    await _emailService.SendTemplateEmailAsync(
+                        existingUser.Email,
+                        existingUser.FullName,
+                        EmailTemplateName.TenantsRegistration,
+                        emailTokens
+                    );
+
+                    _logger.LogInformation($"Welcome email sent to tenant: {existingUser.Email}");
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, $"Failed to send update email to: {existingUser.Email}");
+                    // Don't fail the entire operation if email fails
                 }
 
                 response.Success = true;

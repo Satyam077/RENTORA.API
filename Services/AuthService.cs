@@ -9,7 +9,6 @@ using RENTORA.API.Services.IServices;
 using RENTORA.API.WebSettings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace RENTORA.API.Services
@@ -31,7 +30,6 @@ namespace RENTORA.API.Services
         {
             try
             {
-                // Validate input
                 if (string.IsNullOrWhiteSpace(registrationDto.Email) && string.IsNullOrWhiteSpace(registrationDto.Mobile))
                 {
                     return new LoginResponse
@@ -50,7 +48,6 @@ namespace RENTORA.API.Services
                     };
                 }
 
-                // Check if user already exists
                 var existingUser = await _userRepository.GetUserByEmailOrMobileAsync(
                     registrationDto.Email ?? registrationDto.Mobile
                 );
@@ -68,7 +65,7 @@ namespace RENTORA.API.Services
                 var newUser = new Registration
                 {
                     FullName = registrationDto.FullName,
-                    Email = registrationDto.Email,
+                    Email = registrationDto.Email.ToLower().Trim(),
                     Mobile = registrationDto.Mobile,
                     Gender = registrationDto.Gender,
                     DateOfBirth = registrationDto.DateOfBirth,
@@ -80,7 +77,7 @@ namespace RENTORA.API.Services
                     IsEmailVerified = false,
                     IsMobileVerified = false,
                     IsOtpVerified = false,
-                    CreatedBy = "System",
+                    CreatedBy = "Landlords",
                     IsActive = true,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow
@@ -88,7 +85,39 @@ namespace RENTORA.API.Services
 
                 var createdUser = await _userRepository.CreateUserAsync(newUser);
 
-                // Generate JWT token
+                var tokens = new Dictionary<string, string>
+                    {
+                       { "FullName", newUser.FullName },
+                       { "ApplicationUrl", "www.rentora.com" },
+                       { "Email", newUser.Email ?? " "},
+                       { "VerifyUrl", "www.rentora.com/" + $"{newUser.Email }" + "/" + $"{newUser.IsEmailVerified }"},
+                       { "Password", registrationDto.Password },
+                       { "SupportStaff", "RENTORA PMS" },
+                       { "SupportContact", "+91 1234567899" },
+                       { "SupportEmail", "uniquextech7@gmail.com"},
+                       { "CurrentYear",DateTime.UtcNow.ToString()}
+                    };
+
+
+                if (newUser?.Role != Role.SuperAdmin)
+                {
+                    EmailTemplateName templateName = newUser?.Role switch
+                    {
+                        Role.Admin => EmailTemplateName.AdminRegistration,
+                        Role.Landlords => EmailTemplateName.LandlordsRegistration,
+                        Role.Agents => EmailTemplateName.AgentRegistration,
+                        Role.Tenants => EmailTemplateName.TenantsRegistration,
+                        _ => EmailTemplateName.HelpdeskQuery
+                    };
+
+                    await _emailService.SendTemplateEmailAsync(
+                        newUser.Email,
+                        newUser.FullName,
+                        templateName,
+                        tokens
+                    );
+                }
+
                 var token = GenerateJwtToken(createdUser);
 
                 return new LoginResponse
@@ -123,8 +152,7 @@ namespace RENTORA.API.Services
         {
             try
             {
-                // Find user by email or mobile
-                var user = await _userRepository.GetUserByEmailOrMobileAsync(loginDto.EmailOrMobile);
+                var user = await _userRepository.GetUserByEmailOrMobileAsync(loginDto.EmailOrMobile.ToLower().Trim());
 
                 if (user == null)
                 {
@@ -135,7 +163,6 @@ namespace RENTORA.API.Services
                     };
                 }
 
-                // Verify password
                 if (!PasswordHelper.VerifyPasswordHash(loginDto.Password,
                     Convert.FromBase64String(user.PasswordHash),Convert.FromBase64String(user.PasswordSalt)))
                 {
@@ -146,7 +173,6 @@ namespace RENTORA.API.Services
                     };
                 }
 
-                // Check if user is active
                 if (!user.IsActive)
                 {
                     return new LoginResponse
@@ -156,7 +182,6 @@ namespace RENTORA.API.Services
                     };
                 }
 
-                // Generate JWT token
                 var token = GenerateJwtToken(user);
 
                 return new LoginResponse
@@ -195,7 +220,6 @@ namespace RENTORA.API.Services
                 if (user == null)
                     return false;
 
-                // Generate 6-digit OTP
                 var otp = new Random().Next(100000, 999999).ToString();
 
                 user.LastOtpCode = otp;
