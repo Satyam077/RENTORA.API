@@ -5,7 +5,7 @@ VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RENTORA.API", "RENTORA.API.csproj", "{6725AABD-82E6-4BB0-AA32-404F827A39C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RentoraApp", "..\RentoraApp\RentoraApp.csproj", "{A468D6EF-5A34-4B98-A5D7-FD2916FBF8E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PayU", "..\RentoraWeb\src\PayU\PayU.csproj", "{D51E380A-686F-C599-4724-BF3E5DA139C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,11 +17,10 @@ Global
 		{6725AABD-82E6-4BB0-AA32-404F827A39C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6725AABD-82E6-4BB0-AA32-404F827A39C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6725AABD-82E6-4BB0-AA32-404F827A39C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A468D6EF-5A34-4B98-A5D7-FD2916FBF8E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A468D6EF-5A34-4B98-A5D7-FD2916FBF8E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A468D6EF-5A34-4B98-A5D7-FD2916FBF8E9}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{A468D6EF-5A34-4B98-A5D7-FD2916FBF8E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A468D6EF-5A34-4B98-A5D7-FD2916FBF8E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D51E380A-686F-C599-4724-BF3E5DA139C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D51E380A-686F-C599-4724-BF3E5DA139C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D51E380A-686F-C599-4724-BF3E5DA139C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D51E380A-686F-C599-4724-BF3E5DA139C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
